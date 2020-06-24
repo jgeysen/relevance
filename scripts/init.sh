@@ -13,7 +13,6 @@ pre-commit install -t pre-commit
 pre-commit install -t pre-push
 
 echo "-> creating initial commit in master" \
-&& pipenv run tests \
 && git add . \
 && git commit -m "initial commit" --no-verify \
 && (
