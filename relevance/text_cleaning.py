@@ -48,7 +48,7 @@ def remove_reuters_lingo(article: str) -> str:
     ## Everything inbetween < >, less than 30 characters, (company codes).
     ## Everything inbetween [ ], less than 30 characters, (company codes and article ref.)
     ## Hyperlinks between ( ), shorter than 150 characters.
-    spacing_list = ["<.{0,30}>"]  # , "\[.{0,30}]", "\(?http\S{0,150}\)?"]
+    spacing_list = [r"<.{0,30}>", r"\[.{0,30}]"]  # , "\(?http\S{0,150}\)?"]
     for regex in spacing_list:
         article = re.sub(regex, "", article)
 

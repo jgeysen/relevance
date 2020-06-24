@@ -17,6 +17,7 @@ Submodules
 
    __main__/index.rst
    relevance/index.rst
+   text_cleaning/index.rst
 
 
 Package Contents
