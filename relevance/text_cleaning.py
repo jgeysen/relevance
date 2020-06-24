@@ -68,7 +68,7 @@ def remove_reuters_lingo(article: str) -> str:
     for regex in full_stop_list:
         article = re.sub(regex, r". ", article)
 
-    # Remove reuters lingo at the end of the article:
+        # Remove reuters lingo at the end of the article:
     remove_list = [
         r"\(Reporting.*\;?\n?.*?\;?\n?.*?\)",  # Any combination of (Reporting by xxxx)
         r"\(\writing.*\n?.*\)",  # Any combination of (Writing by xxxx)
@@ -97,5 +97,59 @@ def remove_reuters_lingo(article: str) -> str:
 
     # Add a full stop after (Reuters -) (occurs VERY often at the start of the article):
     new_article = re.sub(r"\(Reuters\)\s\-", r"(Reuters) -. ", article)
+
+    return new_article
+
+
+def add_spacing(article: str) -> str:
+    """Add spacing where necessary to the articles.
+
+    This function adds spacing to the article wherever necessary. Reuters articles contain sentences and words which require spacing
+    but no spacing is provided. This spacing will processing the article e.g. using sentence splitting functions.
+
+    Args:
+      article (str): The article that requires spacing.
+
+    Returns:
+      new_article (str): The article provided with spacing.
+    """
+    # Add space after the word 'premarket' and 'pct' (occurs often without spacing):
+    article = re.sub(r"premarket", r"premarket ", article)
+    article = re.sub(r"pct", r"pct ", article)
+
+    # Replace a full stop followed by a dash by full stop.
+    article = re.sub(r"\.\-", r".", article)
+
+    # Add a whitespace when a numerical character is mentioned without spacing: 'abc2013abc' -> 'abc 2013 abc'
+    # if e.g. '1.2 billion' is mentioned, this shouldn't change!
+    article = re.sub(r"([a-z]+)([0-9]+(\.[0-9]+)?(\,[0-9]+)?\.?)", r"\1 \2", article)
+    article = re.sub(r"([0-9]+(\.[0-9]+)?(\,[0-9]+)?\.?)([a-z]+)", r"\1 \4", article)
+
+    # Add spaces before and after parentheses,
+    # except when after the parentheses there is any kind of punctuation.
+    article = re.sub(r"(\w+)(\()", r"\1 \2", article)
+    article = re.sub(r"(\)\.?\,?\;?\??\!?)(\w+)", r"\1 \2", article)
+
+    # the same for square brackets.
+    article = re.sub(r"(\w+)(\[)", r"\1 \2", article)
+    article = re.sub(r"(\]\.?\,?\;?\??\!?)(\w+)", r"\1 \2", article)
+
+    # Add whitespace when ' ." ' occurs.
+    # Add whitespace when ' ". ' occurs.
+    # Add whitespace when 'abc.Abc' occurs.
+    # Add whitespace when 'ABC.Abc' occurs.
+    # Add whitespace when 'abc.ABC' occurs.
+    article = re.sub(r"(\.)(\"\w+)", r"\1 \2", article)
+    article = re.sub(r"(\w+\"\.)(\w+)", r"\1 \2", article)
+    article = re.sub(r"([A-Z]+\.)([A-Z][a-z])", r"\1 \2", article)
+    article = re.sub(r"([a-z]+\.)([A-Z][a-z]+)", r"\1 \2", article)
+    article = re.sub(r"([a-z]+\.)([A-Z]+)", r"\1 \2", article)
+    article = re.sub(r"(\.)(\<)", r"\1 \2", article)
+
+    # colon: add whitespace when 'abc:abc' occurs.
+    article = re.sub(r"(\w+?\:)(\"?\w+)", r"\1 \2", article)
+
+    # semicolon: add whitespace when 'abc;abc' occurs.
+    new_article = re.sub(r"(\w+?\;)(\"?\w+)", r"\1 \2", article)
 
     return new_article

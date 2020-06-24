@@ -27,7 +27,8 @@ Functions
 
    Reuters lingo removal function.
 
-   This function cleans the reuters lingo from articles.
+   This function cleans the reuters lingo from articles. Reuters articles are written with
+   specific linguage and structure. Many symbols with no semantical meaning are being removed.
 
    :param article: The article that requires cleaning.
    :type article: str
