@@ -16,7 +16,7 @@ echo "-> creating initial commit in master" \
 && git add . \
 && git commit -m "initial commit" --no-verify \
 && (
-	git remote add origin git@github.com:anmut-consulting/relevance.git \
+	git remote add origin git@github.com:jgeysen-work/relevance.git \
 	|| echo "WARNING: problem with remote.  Please verify.") \
 && echo "Creating 'latest' tag" \
 && git tag -f latest \
