@@ -21,6 +21,7 @@ Functions
 .. autoapisummary::
 
    relevance.text_cleaning.remove_reuters_lingo
+   relevance.text_cleaning.add_spacing
 
 
 .. function:: remove_reuters_lingo(article: str) -> str
@@ -34,5 +35,18 @@ Functions
    :type article: str
 
    :returns: *new_article (str)* -- The cleaned article.
+
+
+.. function:: add_spacing(article: str) -> str
+
+   Add spacing where necessary to the articles.
+
+   This function adds spacing to the article wherever necessary. Reuters articles contain sentences and words which require spacing
+   but no spacing is provided. This spacing will processing the article e.g. using sentence splitting functions.
+
+   :param article: The article that requires spacing.
+   :type article: str
+
+   :returns: *new_article (str)* -- The article provided with spacing.
 
 

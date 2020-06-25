@@ -153,3 +153,34 @@ def add_spacing(article: str) -> str:
     new_article = re.sub(r"(\w+?\;)(\"?\w+)", r"\1 \2", article)
 
     return new_article
+
+
+## Add a whitespace when a numerical character is mentioned without spacing: 'abc2013abc'.
+## Some final cleaning, removal of redundant spacing.
+
+
+def remove_spacing(article: str) -> str:
+    """Final cleaning, after adding spaces/full stops and removing reuters
+    lingo, you end up with double spacing etc. Notice we never reduce the
+    number of spaces, this is because we will later filter on spaces to
+    recognize tables.
+
+    Args:
+      article (str): The article that requires spacing to be removed.
+
+    Returns:
+      new_article (str): The article where spacing has been removed.
+    """
+    article = re.sub(r"\^", r"", article)
+    article = re.sub(r"\¬", r" ", article)
+    article = re.sub(r"\¨", r" ", article)
+    article = re.sub(r"\:\.", r":", article)
+    article = re.sub(r"\s\,", r",", article)
+    article = re.sub(r"\s\:", r":", article)
+    article = re.sub(r"\s\;", r";", article)
+    clean1 = [r"\.\.", r"\.\s\s\.", r"\.\s\.", r"\s\s\.", r"\s\."]
+    for regex in clean1:
+        article = re.sub(regex, r".", article)
+
+    new_article = article
+    return new_article
