@@ -20,9 +20,19 @@ Functions
 
 .. autoapisummary::
 
+   relevance.text_cleaning.clean_reuters_article
    relevance.text_cleaning.remove_reuters_lingo
    relevance.text_cleaning.add_spacing
    relevance.text_cleaning.remove_spacing
+
+
+.. function:: clean_reuters_article(article: str) -> str
+
+   Clean articles from reuters - specific reuters artefacts removed
+   :param article: The article to be cleaned.
+   :type article: str
+
+   :returns: *article3 (str)* -- The article which is cleaned.
 
 
 .. function:: remove_reuters_lingo(article: str) -> str

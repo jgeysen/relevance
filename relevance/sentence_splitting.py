@@ -78,3 +78,66 @@ def exclude_tables(df_spacy: pd.DataFrame) -> pd.DataFrame:
     )
 
     return df_returns
+
+
+def parse_short_sentences(
+    df_nltk: pd.DataFrame, min_length: int, combination: str
+) -> pd.DataFrame:
+    """Parse short sentences to long sentences.
+
+    This function parses short sentences to longer ones.
+
+    Args:
+        df_nltk (DataFrame): pandas dataframe containing sentences. This dataframe should have the following
+        columns: sentences, identifier (article level).
+        min_length (int): The minimum length of the sentences to be parsed into longer ones.
+        combination (str): Can have three values; 'previous' indicating short sentences are parsed with
+        the previous sentence, 'next' indicating short sentences are parsed with the next sentence.
+
+    Returns:
+        df_returns (DataFrame): pandas dataframe containing the sentences after parsing.
+    """
+    df_nltk["length"] = [len(sentence.split(" ")) for sentence in df_nltk.sentences]
+    # add a position column to the dataframe, which describes the sentence position in the article:
+    df_nltk["position"] = 1
+    df_nltk["position"] = df_nltk.groupby(["identifier"], sort=False)[
+        "position"
+    ].transform(pd.Series.cumsum)
+    # Length of the article (absolute, number of sentences)
+    art_lengths = pd.DataFrame(
+        df_nltk.groupby(["identifier"], sort=False).size(), columns=["art_length"]
+    ).reset_index(drop=False)
+    df_nltk = pd.merge(df_nltk, art_lengths, on="identifier")
+    # reset the lengths of the first and last sentence of an article to the threshold,
+    # to make sure these aren't shifted.
+    df_nltk.loc[df_nltk.position == 1, "length"] = min_length
+    df_nltk.loc[df_nltk.position == df_nltk.art_length, "length"] = min_length
+    df_nltk = df_nltk.drop(["position", "art_length"], axis=1)
+
+    df_nltk_long = df_nltk[df_nltk.length >= min_length]
+    df_nltk_short = df_nltk[df_nltk.length < min_length]
+    if len(df_nltk_short) > 0:
+        if combination == "previous":
+            df_nltk_short.index = [x - 1 for x in df_nltk_short.index.tolist()]
+            df_nltk_long = df_nltk_long.merge(
+                df_nltk_short, left_index=True, right_index=True, how="left"
+            ).fillna("")
+
+        if combination == "next":
+            df_nltk_short.index = [x + 1 for x in df_nltk_short.index.tolist()]
+            df_nltk_long = df_nltk_short.merge(
+                df_nltk_long, left_index=True, right_index=True, how="right"
+            ).fillna("")
+
+        df_nltk_long["sentences"] = (
+            df_nltk_long.sentences_x.array + " " + df_nltk_long.sentences_y.array
+        )
+        df_nltk_long = df_nltk_long.drop(
+            ["sentences_x", "sentences_y", "length_x", "length_y", "identifier_y"],
+            axis=1,
+        )
+        df_nltk_long.columns = ["identifier", "sentences"]
+
+    df_returns = df_nltk_long.reset_index(drop=True)
+
+    return df_returns
