@@ -8,6 +8,7 @@ python_version = "3.8"
 
 [packages]
 pandas = "*"
+numpy = "*"
 
 [dev-packages]
 black = "==19.3b0"
@@ -24,7 +25,6 @@ sphinx-rtd-theme = "*"
 jupyter = "*"
 jupyterlab = "*"
 ipython = "*"
-
 
 [scripts]
 init = "pipenv run $SHELL scripts/init.sh"
