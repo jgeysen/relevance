@@ -20,16 +20,20 @@ import re
 # They contain a subject, object and a verb.
 
 # wrapper function for adding spacing and removal of reuters lingo etc.:
-# def clean_reuters_article(article):
-#     '''
-#     Clean articles from reuters - specific reuters artefacts removed
-#     Input: article(text)
-#     Output: cleaned article (text)
-#     '''
-#     article1 = remove_reuters_lingo(article)
-#     article2 = add_spacing(article1)
-#     article3 = remove_spacing(article2)
-#     return article3
+
+
+def clean_reuters_article(article: str) -> str:
+    """
+  Clean articles from reuters - specific reuters artefacts removed
+  Args:
+      article (str): The article to be cleaned.
+  Returns:
+      article3 (str): The article which is cleaned.
+  """
+    article1 = remove_reuters_lingo(article)
+    article2 = add_spacing(article1)
+    article3 = remove_spacing(article2)
+    return article3
 
 
 def remove_reuters_lingo(article: str) -> str:

@@ -22,6 +22,7 @@ Functions
 
    relevance.text_cleaning.remove_reuters_lingo
    relevance.text_cleaning.add_spacing
+   relevance.text_cleaning.remove_spacing
 
 
 .. function:: remove_reuters_lingo(article: str) -> str
@@ -48,5 +49,18 @@ Functions
    :type article: str
 
    :returns: *new_article (str)* -- The article provided with spacing.
+
+
+.. function:: remove_spacing(article: str) -> str
+
+   Final cleaning, after adding spaces/full stops and removing reuters
+   lingo, you end up with double spacing etc. Notice we never reduce the
+   number of spaces, this is because we will later filter on spaces to
+   recognize tables.
+
+   :param article: The article that requires spacing to be removed.
+   :type article: str
+
+   :returns: *new_article (str)* -- The article where spacing has been removed.
 
 
