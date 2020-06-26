@@ -30,10 +30,11 @@ def hasNumbers(inputString: str) -> bool:
 def exclude_tables(df_spacy: pd.DataFrame) -> pd.DataFrame:
     """Exclude tables function.
 
-    This function excludes tables from an reuters article. Tables are not sentences, so they can/have to be removed.
+    This function excludes tables from an reuters article. Tables are not sentences, so they have to be removed.
 
     Args:
-            df_spacy (DataFrame): pandas dataframe containing the articles. The column containing the sentences has as header 'sentences'.
+            df_spacy (DataFrame): pandas dataframe containing the articles.
+            The column containing the sentences has as header 'sentences'. No other column is required.
 
     Returns:
             df_returns (DataFrame): pandas dataframe returning the sentences where words containing digits have been dropped.
@@ -112,7 +113,7 @@ def parse_short_sentences(
     # to make sure these aren't shifted.
     df_nltk.loc[df_nltk.position == 1, "length"] = min_length
     df_nltk.loc[df_nltk.position == df_nltk.art_length, "length"] = min_length
-    df_nltk = df_nltk.drop(["position", "art_length"], axis=1)
+    # df_nltk = df_nltk.drop(["position", "art_length"], axis=1)
 
     df_nltk_long = df_nltk[df_nltk.length >= min_length]
     df_nltk_short = df_nltk[df_nltk.length < min_length]
@@ -132,11 +133,12 @@ def parse_short_sentences(
         df_nltk_long["sentences"] = (
             df_nltk_long.sentences_x.array + " " + df_nltk_long.sentences_y.array
         )
-        df_nltk_long = df_nltk_long.drop(
-            ["sentences_x", "sentences_y", "length_x", "length_y", "identifier_y"],
-            axis=1,
-        )
-        df_nltk_long.columns = ["identifier", "sentences"]
+
+        df_nltk_long["identifier"] = [
+            x + y if x == "" else x
+            for x, y in zip(df_nltk_long.identifier_x, df_nltk_long.identifier_y)
+        ]
+        df_nltk_long = df_nltk_long[["sentences", "identifier"]]
 
     df_returns = df_nltk_long.reset_index(drop=True)
 
