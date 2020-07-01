@@ -9,6 +9,8 @@ python_version = "3.8"
 [packages]
 pandas = "*"
 numpy = "*"
+spacy = "*"
+nltk = "*"
 
 [dev-packages]
 black = "==19.3b0"
