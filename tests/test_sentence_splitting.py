@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import spacy
 
-from relevance.sentence_splitting import (  # spacy_processing,
+from relevance.sentence_splitting import (
     exclude_tables,
     hasNumbers,
     parse_short_sentences,
@@ -234,4 +234,35 @@ def test_select_actual_sentences() -> None:
 #     assert np.array_equal(
 #         spacy_processing(input1_df, spacy_pipe).article_body.values,
 #         output1_df.article_body.values,
+#     )
+
+
+# def test_nltk_processing() -> None:
+#     # nltk.data.load("tokenizers/punkt/english.pickle")
+#     input1_df = pd.DataFrame(
+#         list(
+#             zip(
+#                 [
+#                     "This is the first sentence of the first article. This is a much longer intermediate sentence of the article, rather short sentences before and after should be parsed to this one."
+#                 ],
+#                 ["article_id1"],
+#             )
+#         ),
+#         columns=["article_body", "identifier"],
+#     )
+#     output1_df = pd.DataFrame(
+#         list(
+#             zip(
+#                 [
+#                     "This is the first sentence of the first article.",
+#                     "This is a much longer intermediate sentence of the article, rather short sentences before and after should be parsed to this one.",
+#                 ],
+#                 ["article_id1", "article_id1"],
+#             )
+#         ),
+#         columns=["sentences", "identifier"],
+#     )
+
+#     assert np.array_equal(
+#         nltk_processing(input1_df).sentences.values, output1_df.sentences.values
 #     )
