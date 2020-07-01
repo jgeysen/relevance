@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import spacy
 
-from relevance.sentence_splitting import (
+from relevance.sentence_splitting import (  # spacy_processing,
     exclude_tables,
     hasNumbers,
     parse_short_sentences,
@@ -194,3 +194,44 @@ def test_select_actual_sentences() -> None:
         select_actual_sentences(input1_df, spacy_pipe).sentences.values,
         output1_df.sentences.values,
     )
+
+
+# def test_spacy_processing() -> None:
+#     spacy_pipe = spacy.load(
+#         "en_core_web_sm",
+#         disable=[
+#             "tagger",
+#             "ner",
+#             "entity_linker",
+#             "merge_noun_chunks",
+#             "merge_entities",
+#             "merge_subtokens",
+#         ],
+#     )
+#     input1_df = pd.DataFrame(
+#         list(
+#             zip(
+#                 [
+#                     "This is the first sentence of the first article. This is a much longer intermediate sentence of the article, rather short sentences before and after should be parsed to this one."
+#                 ],
+#                 ["article_id1"],
+#             )
+#         ),
+#         columns=["article_body", "identifier"],
+#     )
+#     output1_df = pd.DataFrame(
+#         list(
+#             zip(
+#                 [
+#                     "This is the first sentence of the first article. This is a much longer intermediate sentence of the article, rather short sentences before and after should be parsed to this one."
+#                 ],
+#                 ["article_id1"],
+#             )
+#         ),
+#         columns=["article_body", "identifier"],
+#     )
+
+#     assert np.array_equal(
+#         spacy_processing(input1_df, spacy_pipe).article_body.values,
+#         output1_df.article_body.values,
+#     )

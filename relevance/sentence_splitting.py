@@ -3,6 +3,8 @@ Article cleaning and relevance filtering project
 =========================================================
 The core module of the project
 """
+
+
 # import packages
 import pandas as pd
 import spacy
@@ -257,40 +259,54 @@ def select_actual_sentences(
     return df
 
 
-# def spacy_processing(df: pd.DataFrame,spacy_pipe: spacy.spacy_pipe) -> pd.DataFrame:
-# 	"""Processing the articles using spacy functionality
+# def spacy_processing(df: pd.DataFrame, spacy_pipe: spacy.pipeline) -> pd.DataFrame:
+#     """Processing the articles using spacy functionality.
 
-# 	This function does the following:
-# 	1. The spacy sentisizer splits the articles in sentences.
-# 	2. Using the 'exclude_tables' functionality in the sentence_splitting module, tables can be differentiated from sentences.
-# 	3. After excluding the tables from the article, the sentences are parsed back together into a processed article body and returned.
+#     This function does the following:
+#     1. The spacy sentisizer splits the articles in sentences.
+#     2. Using the 'exclude_tables' functionality in the sentence_splitting module, tables can be differentiated from sentences.
+#     3. After excluding the tables from the article, the sentences are parsed back together into a processed article body and returned.
 
-# 	Args:
-# 		df (DataFrame): Dataframe containing a column 'article_body' containing article bodies.
-# 		spacy_pipe (spacy_pipe): spacy pipe object, called/loaded/passed on a function level for efficiency.
+#     Args:
+#         df (DataFrame): Dataframe containing a column 'article_body' containing article bodies.
+#         spacy_pipe (spacy_pipe): spacy pipe object, called/loaded/passed on a function level for efficiency.
 
-# 	Returns:
-# 		df_new (DataFrame): Dataframe containing article body after excluding tables.
-
-# 	"""
+#     Returns:
+#         df_new (DataFrame): Dataframe containing article body after excluding tables.
+#     """
 #     # SPACY:
-#     df['spacy_object'] = [spacy_pipe(x) for x in df.article_body.array]
-#     df['sentences'] = [[sent.string.strip() for sent in doc.sents] for doc in df.spacy_object.array]
-#     lens = [len(item) for item in df['sentences']]
-#     df_spacy = pd.DataFrame({"identifier": np.repeat(df['identifier'].values,lens),
-#                              #"title" : np.repeat(df['title'].values,lens),
-#                              "sentences" : np.concatenate(df['sentences'].values)})
+#     df["spacy_object"] = [spacy_pipe(x) for x in df.article_body.array]
+#     df["sentences"] = [
+#         [sent.string.strip() for sent in doc.sents] for doc in df.spacy_object.array
+#     ]
+#     lens = [len(item) for item in df["sentences"]]
+#     df_spacy = pd.DataFrame(
+#         {
+#             "identifier": np.repeat(df["identifier"].values, lens),
+#             # "title" : np.repeat(df['title'].values,lens),
+#             "sentences": np.concatenate(df["sentences"].values),
+#         }
+#     )
 
 #     # exclude table sentences:
 #     df_spacy = exclude_tables(df_spacy)
 #     # Parse back together:
-#     df_new = df_spacy.groupby('identifier')['sentences'].apply(list).reset_index(name='sentences_1')
+#     df_new = (
+#         df_spacy.groupby("identifier")["sentences"]
+#         .apply(list)
+#         .reset_index(name="sentences_1")
+#     )
 #     # parse the sentences back together using join:
-#     df_new['article_body'] = [' '.join(sentence) for sentence in df_new.sentences_1]
+#     df_new["article_body"] = [" ".join(sentence) for sentence in df_new.sentences_1]
 #     # parse the sentences back together using join:
-#     df_new['article_body'] = [re.sub('\n|\r',' ',article) for article in df_new.article_body]
+#     df_new["article_body"] = [
+#         re.sub("\n|\r", " ", article) for article in df_new.article_body
+#     ]
+
+#     df_new = df_new.drop(["sentences_1"], axis=1)
 
 #     return df_new
+
 
 # def nltk_processing(df: pd.DataFrame,nltk_pipe: nltk.nltk_pipe) -> pd.DataFrame:
 # 	"""Processing the articles using NLTK
