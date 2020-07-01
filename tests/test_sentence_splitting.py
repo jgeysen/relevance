@@ -29,7 +29,8 @@ def test_parse_short_sentences() -> None:
                     "This is a much longer intermediate sentence of the article, rather short sentences before and after should be parsed to this one.",
                     "Final one.",
                     "First sentence of a second article.",
-                    "Short sentence.",
+                    "Short sentence1.",
+                    "Short sentence2.",
                     "Another short one.",
                     "A long sentence, short sentences should be parsed to this one.",
                     "Final sentence of the second article.",
@@ -40,6 +41,7 @@ def test_parse_short_sentences() -> None:
                     "article_id1",
                     "article_id1",
                     "article_id1",
+                    "article_id2",
                     "article_id2",
                     "article_id2",
                     "article_id2",
@@ -56,20 +58,16 @@ def test_parse_short_sentences() -> None:
         list(
             zip(
                 [
-                    " First sentence of the first article.",
-                    "Short sentence. This is a much longer intermediate sentence of the article, rather short sentences before and after should be parsed to this one.",
-                    " Final one.",
-                    " First sentence of a second article.",
-                    "Short sentence. Another short one.",
-                    " A long sentence, short sentences should be parsed to this one.",
-                    " Final sentence of the second article.",
-                    " First sentence of a third article, which only has one sentence.",
+                    "First sentence of the first article. Short sentence.",
+                    "This is a much longer intermediate sentence of the article, rather short sentences before and after should be parsed to this one. Final one.",
+                    "First sentence of a second article. Short sentence1. Short sentence2.",
+                    "A long sentence, short sentences should be parsed to this one. Another short one.",
+                    "Final sentence of the second article.",
+                    "First sentence of a third article, which only has one sentence.",
                 ],
                 [
                     "article_id1",
                     "article_id1",
-                    "article_id1",
-                    "article_id2",
                     "article_id2",
                     "article_id2",
                     "article_id2",
@@ -79,43 +77,43 @@ def test_parse_short_sentences() -> None:
         ),
         columns=["sentences", "identifier"],
     )
-    min_length = 3
-    combination = "next"
+    min_length = 4
+    combination = "previous"
     assert np.array_equal(
         parse_short_sentences(input1_df, min_length, combination).sentences.values,
         output1_df.sentences.values,
     )
-    min_length = 3
-    combination = "previous"
-    output2_df = pd.DataFrame(
-        list(
-            zip(
-                [
-                    "First sentence of the first article. Short sentence.",
-                    "This is a much longer intermediate sentence of the article, rather short sentences before and after should be parsed to this one. ",
-                    "Final one. ",
-                    "First sentence of a second article. Short sentence.",
-                    "Another short one. ",
-                    "A long sentence, short sentences should be parsed to this one. ",
-                    "Final sentence of the second article. ",
-                    "First sentence of a third article, which only has one sentence. ",
-                ],
-                [
-                    "article_id1",
-                    "article_id1",
-                    "article_id1",
-                    "article_id2",
-                    "article_id2",
-                    "article_id2",
-                    "article_id2",
-                    "article_id3",
-                ],
-            )
-        ),
-        columns=["sentences", "identifier"],
-    )
+    # min_length = 3
+    # combination = "previous"
+    # output2_df = pd.DataFrame(
+    #     list(
+    #         zip(
+    #             [
+    #                 "First sentence of the first article. Short sentence.",
+    #                 "This is a much longer intermediate sentence of the article, rather short sentences before and after should be parsed to this one. ",
+    #                 "Final one. ",
+    #                 "First sentence of a second article. Short sentence.",
+    #                 "Another short one. ",
+    #                 "A long sentence, short sentences should be parsed to this one. ",
+    #                 "Final sentence of the second article. ",
+    #                 "First sentence of a third article, which only has one sentence. ",
+    #             ],
+    #             [
+    #                 "article_id1",
+    #                 "article_id1",
+    #                 "article_id1",
+    #                 "article_id2",
+    #                 "article_id2",
+    #                 "article_id2",
+    #                 "article_id2",
+    #                 "article_id3",
+    #             ],
+    #         )
+    #     ),
+    #     columns=["sentences", "identifier"],
+    # )
 
-    assert np.array_equal(
-        parse_short_sentences(input1_df, min_length, combination).sentences.values,
-        output2_df.sentences.values,
-    )
+    # assert np.array_equal(
+    #     parse_short_sentences(input1_df, min_length, combination).sentences.values,
+    #     output2_df.sentences.values,
+    # )

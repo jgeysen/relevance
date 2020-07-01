@@ -31,6 +31,11 @@ def exclude_tables(df_spacy: pd.DataFrame) -> pd.DataFrame:
     """Exclude tables function.
 
     This function excludes tables from an reuters article. Tables are not sentences, so they have to be removed.
+    Sentences are deemed to be part of a table if they meet the following criteria:
+    1. The sentence contains less than 5 actual words AND the sentence contains more than 5 consecutive full stops or spaces
+    2. The sentence has more words containing digits than actual words AND the number of words containing digits is not zero.
+
+    If a sentence meet criteria 1 or 2, the sentence is removed from the dataframe.
 
     Args:
             df_spacy (DataFrame): pandas dataframe containing the articles.
@@ -39,18 +44,23 @@ def exclude_tables(df_spacy: pd.DataFrame) -> pd.DataFrame:
     Returns:
             df_returns (DataFrame): pandas dataframe returning the sentences where words containing digits have been dropped.
     """
-    df_spacy["split"] = df_spacy.sentences.str.split()
-    df_spacy["total_length"] = df_spacy.split.str.len()
-
+    # split the sentences on spaces, store as list for each sentence
+    df_spacy["split_on_spaces"] = df_spacy.sentences.str.split()
+    # length of the list of the sentence splitted on spaces => number of words/numbers/symbols in the sentence.
+    df_spacy["total_length"] = df_spacy.split_on_spaces.str.len()
+    # number of strings which don't contain any numbers (= deemed 'actual words') for each sentence
     df_spacy["nr_of_actual_words"] = [
-        len([i for i in x if hasNumbers(i) is False]) for x in df_spacy.split
+        len([i for i in x if hasNumbers(i) is False]) for x in df_spacy.split_on_spaces
     ]
+    # number of strings which contain one or more numbers for each sentence
     df_spacy["nr_of_digits"] = (
         df_spacy.total_length.values - df_spacy.nr_of_actual_words.values
     )
+    # Boolean column, true if the sentence contains more than 5 consecutive spaces or full stops.
     df_spacy["contains_spacing_fullstops"] = df_spacy.sentences.str.contains(
-        r"\s{8}|\.{8}", regex=True
+        r".*\s{5,}.*|.*\.{5,}.*", regex=True
     )
+    # Boolean column, true if the sentence contains more strings containing no digits than strings containing digits.
     df_spacy["more_words_than_digits"] = (
         df_spacy.nr_of_actual_words.values > df_spacy.nr_of_digits.values
     )
@@ -61,12 +71,16 @@ def exclude_tables(df_spacy: pd.DataFrame) -> pd.DataFrame:
         "var3": eval("df_spacy.more_words_than_digits == False"),
         "var4": eval("df_spacy.nr_of_digits != 0"),
     }
-
+    # following sentences are deemed to be (a part of) a table:
+    # 1. The sentence contains less than 5 actual words AND the sentence contains more than 5 consecutive full stops or spaces
+    # 2. The sentence has more words containing digits than actual words AND the number of words containing digits is not zero.
     index_tables = df_spacy[
         ((z["var1"]) & (z["var2"])) | ((z["var3"]) & (z["var4"]))
     ].index
-    df_spacy = df_spacy[~df_spacy.index.isin(index_tables)].drop(["split"], axis=1)
+    # only select those sentences which aren't selected by the above rules.
+    df_spacy = df_spacy[~df_spacy.index.isin(index_tables)]
 
+    # drop the columns used for identifying the (sentences which are part of the) tables.
     df_returns = df_spacy.reset_index(drop=True).drop(
         [
             "nr_of_actual_words",
@@ -74,6 +88,7 @@ def exclude_tables(df_spacy: pd.DataFrame) -> pd.DataFrame:
             "contains_spacing_fullstops",
             "more_words_than_digits",
             "total_length",
+            "split_on_spaces",
         ],
         axis=1,
     )
@@ -98,48 +113,63 @@ def parse_short_sentences(
     Returns:
         df_returns (DataFrame): pandas dataframe containing the sentences after parsing.
     """
+    # Add a numerical column containing the length of the sentence, when split on spaces.
     df_nltk["length"] = [len(sentence.split(" ")) for sentence in df_nltk.sentences]
     # add a position column to the dataframe, which describes the sentence position in the article:
     df_nltk["position"] = 1
     df_nltk["position"] = df_nltk.groupby(["identifier"], sort=False)[
         "position"
     ].transform(pd.Series.cumsum)
-    # Length of the article (absolute, number of sentences)
+    # Add an art_length column, which is the length of the article measured in number of sentences.
+    # First make a dataframe art_lengths contains for each identifier the number of times it occurs in the df_nltk.
     art_lengths = pd.DataFrame(
         df_nltk.groupby(["identifier"], sort=False).size(), columns=["art_length"]
     ).reset_index(drop=False)
+    # Merge the art_lengths dataframe with the df_nltk on the identifier.
     df_nltk = pd.merge(df_nltk, art_lengths, on="identifier")
-    # reset the lengths of the first and last sentence of an article to the threshold,
-    # to make sure these aren't shifted.
-    df_nltk.loc[df_nltk.position == 1, "length"] = min_length
-    df_nltk.loc[df_nltk.position == df_nltk.art_length, "length"] = min_length
-    # df_nltk = df_nltk.drop(["position", "art_length"], axis=1)
 
-    df_nltk_long = df_nltk[df_nltk.length >= min_length]
-    df_nltk_short = df_nltk[df_nltk.length < min_length]
-    if len(df_nltk_short) > 0:
-        if combination == "previous":
-            df_nltk_short.index = [x - 1 for x in df_nltk_short.index.tolist()]
-            df_nltk_long = df_nltk_long.merge(
-                df_nltk_short, left_index=True, right_index=True, how="left"
-            ).fillna("")
+    if combination == "previous":
+        # When we want to merge short sentences with the previous sentence in an article, we want to avoid merging the first (short) sentence
+        # of an article with the last sentence of the previous article. For this reason, we initialise the lenght of the first sentence always
+        # with the minimum length of a long sentence.
+        df_nltk.loc[df_nltk.position == 1, "length"] = min_length
+        df_nltk_long = df_nltk[df_nltk.length >= min_length]
+        df_nltk_short = df_nltk[df_nltk.length < min_length]
+        if len(df_nltk_short) > 0:
+            # Map the indices of all short sentences onto the nearest lower index of the long sentences.
+            df_nltk_short.index = [
+                min(df_nltk_long.index, key=lambda x: (abs(x - y), x))
+                for y in df_nltk_short.index.tolist()
+            ]
+            # Concat long and short sentence dataframes, don't reset the indices!
+            result = pd.concat(
+                [df_nltk_long, df_nltk_short], ignore_index=False, sort=False
+            ).reset_index()
+            # join all sentences with the same index in the final dataframe. This joins short and long sentences into one sentence.
+            df_returns = pd.DataFrame(
+                result.groupby(["index"])["sentences"].apply(lambda x: " ".join(x)),
+                columns=["sentences"],
+            )
+            df_returns["identifier"] = (
+                result.groupby(["index"])["identifier"].min().tolist()
+            )
 
-        if combination == "next":
-            df_nltk_short.index = [x + 1 for x in df_nltk_short.index.tolist()]
-            df_nltk_long = df_nltk_short.merge(
-                df_nltk_long, left_index=True, right_index=True, how="right"
-            ).fillna("")
+    # if combination == "next":
+    # 	# When we want to merge short sentences with the previous sentence in an article, we want to avoid merging the first (short) sentence
+    # 	# of an article with the last sentence of the previous article. For this reason, we initialise the lenght of the first sentence always
+    # 	# with the minimum length of a long sentence.
+    #     df_nltk.loc[df_nltk.position == 1, "length"] = min_length
+    #     df_nltk_long = df_nltk[df_nltk.length >= min_length]
+    #     df_nltk_short = df_nltk[df_nltk.length < min_length]
+    #     if len(df_nltk_short) > 0:
+    #     	# Map the indices of all short sentences onto the nearest lower index of the long sentences.
+    #         df_nltk_short.index = [min(df_nltk_long.index, key=lambda x: (abs(x - y), x)) for y in df_nltk_short.index.tolist()]
+    #         # Concat long and short sentence dataframes, don't reset the indices!
+    #         result = pd.concat([df_nltk_long, df_nltk_short], ignore_index=False, sort=False).reset_index()
+    #         # join all sentences with the same index in the final dataframe. This joins short and long sentences into one sentence.
+    #         df_returns = pd.DataFrame(result.groupby(['index'])['sentences'].apply(lambda x: ' '.join(x)),columns=['sentences'])
+    #         df_returns['identifier'] = result.groupby(['index'])['identifier'].min().tolist()
 
-        df_nltk_long["sentences"] = (
-            df_nltk_long.sentences_x.array + " " + df_nltk_long.sentences_y.array
-        )
-
-        df_nltk_long["identifier"] = [
-            x + y if x == "" else x
-            for x, y in zip(df_nltk_long.identifier_x, df_nltk_long.identifier_y)
-        ]
-        df_nltk_long = df_nltk_long[["sentences", "identifier"]]
-
-    df_returns = df_nltk_long.reset_index(drop=True)
+    df_returns = df_returns.reset_index(drop=True)
 
     return df_returns
