@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import spacy
 
 from relevance.sentence_splitting import (
     exclude_tables,
@@ -121,6 +122,17 @@ def test_parse_short_sentences() -> None:
 
 
 def test_select_actual_sentences() -> None:
+    spacy_pipe = spacy.load(
+        "en_core_web_sm",
+        disable=[
+            "tagger",
+            "ner",
+            "entity_linker",
+            "merge_noun_chunks",
+            "merge_entities",
+            "merge_subtokens",
+        ],
+    )
     input1_df = pd.DataFrame(
         list(
             zip(
@@ -179,5 +191,6 @@ def test_select_actual_sentences() -> None:
         columns=["sentences", "identifier"],
     )
     assert np.array_equal(
-        select_actual_sentences(input1_df).sentences.values, output1_df.sentences.values
+        select_actual_sentences(input1_df, spacy_pipe).sentences.values,
+        output1_df.sentences.values,
     )

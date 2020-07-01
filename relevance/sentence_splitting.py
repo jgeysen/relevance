@@ -210,7 +210,9 @@ def parse_short_sentences(
 
 
 # this function checks if each of the given sentences actually contain a subject, object and verb.
-def select_actual_sentences(df: pd.DataFrame) -> pd.DataFrame:
+def select_actual_sentences(
+    df: pd.DataFrame, spacy_pipe: spacy.pipeline
+) -> pd.DataFrame:
     """Select actual sentences, which contain a verb, subject and object.
 
     This function uses the spacy dependency labels and selects those sentences which contain a verb, object and subject.
@@ -222,17 +224,6 @@ def select_actual_sentences(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         df (DataFrame): A dataframe which only contains sentences with at least one verb, subject and object.
     """
-    spacy_pipe = spacy.load(
-        "en_core_web_sm",
-        disable=[
-            "tagger",
-            "ner",
-            "entity_linker",
-            "merge_noun_chunks",
-            "merge_entities",
-            "merge_subtokens",
-        ],
-    )
     # define what verbs, objects and subjects are. This information is found in the Spacy documentation.
     verbs = ["ROOT", "acl"]
     subjects = ["subj", "nsubj", "csubj", "nsubjpass", "compound"]
