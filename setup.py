@@ -30,7 +30,7 @@ setup(
     ],
     dependency_links=[],
     description="Extracting relevant parts of text from a larger body of text. Given a term, this repo creates the tools necessary to determine how relevant a part of text is to that term; the output of which can be used to filter irrelevant sentences.",
-    install_requires=["pandas", "numpy"],
+    install_requires=["pandas", "numpy", "spacy", "nltk"],
     long_description=readme + "\n\n" + history,
     include_package_data=True,
     keywords="relevance",
