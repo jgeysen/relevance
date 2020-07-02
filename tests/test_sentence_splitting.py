@@ -8,6 +8,7 @@ from relevance.sentence_splitting import (
     nltk_processing,
     parse_short_sentences,
     select_actual_sentences,
+    sentence_splitting,
     spacy_processing,
 )
 
@@ -267,4 +268,33 @@ def test_nltk_processing() -> None:
 
     assert np.array_equal(
         nltk_processing(input1_df).sentences.values, output1_df.sentences.values
+    )
+
+
+def test_sentence_splitting() -> None:
+    input1_df = pd.DataFrame(
+        list(
+            zip(
+                [
+                    "This is the first sentence of the first article. This is a much longer intermediate sentence of the article, rather short sentences before and after should be parsed to this one."
+                ],
+                ["article_id1"],
+            )
+        ),
+        columns=["article_body", "identifier"],
+    )
+    output1_df = pd.DataFrame(
+        list(
+            zip(
+                [
+                    "This is the first sentence of the first article.",
+                    "This is a much longer intermediate sentence of the article, rather short sentences before and after should be parsed to this one.",
+                ],
+                ["article_id1", "article_id1"],
+            )
+        ),
+        columns=["sentences", "identifier"],
+    )
+    assert np.array_equal(
+        sentence_splitting(input1_df).sentences.values, output1_df.sentences.values
     )

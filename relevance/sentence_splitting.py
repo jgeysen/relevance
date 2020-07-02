@@ -8,42 +8,53 @@ import numpy as np
 import pandas as pd
 import spacy
 
-# def sentence_splitting_for_dataframes(df: pd.DataFrame) -> pd.DataFrame:
-# 	"""Overarching function which splits reuters articles into sentences, optimized for a dataframe.
 
-# 	This function does the following:
-# 	1. Load spacy and nltk pipes
-# 	2. Call the spacy_processing function on the dataframe to use spacy to split the article into sentences and exclude tables.
-# 	3. Call the nltk_processing fucntion on the dataframe to use nltk to split the article into sentences, short sentences are parsed to the nearest longest sentence.
-# 	4. Only selecting those nltk sentences which contain at least one subject, object and verb.
+def sentence_splitting(df: pd.DataFrame) -> pd.DataFrame:
+    """Overarching function which splits reuters articles into sentences,
+    optimized for a dataframe.
 
-# 	It returns a dataframe with sentences.
+    This function does the following:
+    1. Load spacy and nltk pipes
+    2. Call the spacy_processing function on the dataframe to use spacy to split the article into sentences and exclude tables.
+    3. Call the nltk_processing fucntion on the dataframe to use nltk to split the article into sentences, short sentences are parsed to the nearest longest sentence.
+    4. Only selecting those nltk sentences which contain at least one subject, object and verb.
 
-# 	Args:
-# 		df: (DataFrame):
+    It returns a dataframe with sentences.
 
-# 	Returns:
-# 		df_sents (DataFrame):
+    Args:
+        df: (DataFrame): A dataframe containing
 
-# 	"""
-#     spacy_pipe = spacy.load('en_core_web_sm',disable=['tagger',
-#                                                       'ner',
-#                                                       'entity_linker',
-#                                                       'merge_noun_chunks',
-#                                                       'merge_entities',
-#                                                       'merge_subtokens'])
-#     # throw out: 'Reuters euro Eurobond new issue index'
-#     #df = df[df.title != 'Reuters euro Eurobond new issue index'].reset_index(drop=True)
+    Returns:
+         df_sents (DataFrame):
+    """
+    spacy_pipe = spacy.load(
+        "en_core_web_sm",
+        disable=[
+            "tagger",
+            "ner",
+            "entity_linker",
+            "merge_noun_chunks",
+            "merge_entities",
+            "merge_subtokens",
+        ],
+    )
+    # throw out: 'Reuters euro Eurobond new issue index'
+    # df = df[df.title != "Reuters euro Eurobond new issue index"].reset_index(drop=True)
 
-#     # df at this point is a dataframe of articles.
-#     df_new = spacy_processing(df,spacy_pipe)
-#     df_sents = nltk_processing(df_new,nltk_pipe)
+    # df at this point is a dataframe of articles.
+    # Pass this dataframe of article_bodies to spacy_processing function, which will exclude the tables from the article_body.
+    # Spacy_processing returns article_bodies, no sentences yet.
+    df_new = spacy_processing(df, spacy_pipe)
+    # Pass the article_bodies to nltk_processing, which uses the NLTK senticiser to split the article in sentences.
+    # Additionally, sentences which are too short will be mapped onto the nearest longer sentence in the article.
+    df_sents = nltk_processing(df_new)
 
-#     # final check: Each sentence contains a subject, object and verb, using spacy again:
-#     df_sents = select_actual_sentences(df_sents,spacy_pipe)
-#     #return sents
+    # final check: Each sentence contains a subject, object and verb, using spacy again.
+    # If a sentence doesn't contain all three, these sentences will be excluded.
+    df_sents = select_actual_sentences(df_sents, spacy_pipe)
+    # return sents
 
-#   return df_sents
+    return df_sents
 
 
 def spacy_processing(df: pd.DataFrame, spacy_pipe: spacy.pipeline) -> pd.DataFrame:
@@ -55,7 +66,8 @@ def spacy_processing(df: pd.DataFrame, spacy_pipe: spacy.pipeline) -> pd.DataFra
     3. After excluding the tables from the article, the sentences are parsed back together into a processed article body and returned.
 
     Args:
-        df (DataFrame): Dataframe containing a column 'article_body' containing article bodies.
+        df (DataFrame): Dataframe containing a column 'article_body' containing article bodies and a column 'identifier' containing an identifier
+        for each article.
         spacy_pipe (spacy_pipe): spacy pipe object, called/loaded/passed on a function level for efficiency.
 
     Returns:
@@ -70,7 +82,6 @@ def spacy_processing(df: pd.DataFrame, spacy_pipe: spacy.pipeline) -> pd.DataFra
     df_spacy = pd.DataFrame(
         {
             "identifier": np.repeat(df["identifier"].values, lens),
-            # "title" : np.repeat(df['title'].values,lens),
             "sentences": np.concatenate(df["sentences"].values),
         }
     )
