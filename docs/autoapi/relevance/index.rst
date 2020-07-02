@@ -17,7 +17,6 @@ Submodules
 
    __main__/index.rst
    feature_engineering/index.rst
-   relevance/index.rst
    sentence_splitting/index.rst
    text_cleaning/index.rst
 

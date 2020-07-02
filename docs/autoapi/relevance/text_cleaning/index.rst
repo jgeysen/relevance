@@ -28,7 +28,11 @@ Functions
 
 .. function:: clean_reuters_article(article: str) -> str
 
-   Clean articles from reuters - specific reuters artefacts removed
+   Wrapper function which calls all functions in the module.
+
+   Clean articles from reuters - specific reuters artefacts are removed: reuters lingo is removed,
+   spacing is added where necessary and spacing is removed where unnecessary.
+
    :param article: The article to be cleaned.
    :type article: str
 
@@ -40,7 +44,7 @@ Functions
    Reuters lingo removal function.
 
    This function cleans the reuters lingo from articles. Reuters articles are written with
-   specific linguage and structure. Many symbols with no semantical meaning are being removed.
+   specific language and structure. Many symbols with no semantical meaning are being removed.
 
    :param article: The article that requires cleaning.
    :type article: str
@@ -52,21 +56,29 @@ Functions
 
    Add spacing where necessary to the articles.
 
-   This function adds spacing to the article wherever necessary. Reuters articles contain sentences and words which require spacing
-   but no spacing is provided. This spacing will processing the article e.g. using sentence splitting functions.
+   This function adds spacing to the article wherever necessary.
+   This means adding spacing where it belongs according to the rules of the English language, e.g.
+   a space after a full stop: "abc:abc" -> "abc: abc", a space after a comma: "abc,abc" -> "abc, abc", etc.
+   The implemented rules use regexes to only add spacing
+   only where it is required. Reuters articles are noisy
+   and require spacing where no spacing is provided. This spacing will help processing the article e.g. using
+   sentence splitting functions.
 
    :param article: The article that requires spacing.
    :type article: str
 
-   :returns: *new_article (str)* -- The article provided with spacing.
+   :returns: *new_article (str)* -- The article provided with spacing in the right locations.
 
 
 .. function:: remove_spacing(article: str) -> str
 
-   Final cleaning, after adding spaces/full stops and removing reuters
-   lingo, you end up with double spacing etc. Notice we never reduce the
-   number of spaces, this is because we will later filter on spaces to
-   recognize tables.
+   Function to remove unnecessary spacing from articles.
+
+   Reuters articles are noisy and contain often contain spacing in undesirable locations.
+   This spacing will confuse any further processing of the article e.g. using
+   sentence splitting functions. Notice we never reduce the
+   number of consecutive spaces (e.g. reducing 5 consecutive spaces by 1),
+   this is because we will later filter on spaces to recognize tables.
 
    :param article: The article that requires spacing to be removed.
    :type article: str
