@@ -25,16 +25,37 @@ import pandas as pd
 #         df_final = pd.concat([df_final,df_data],axis=0)
 #     return df_final.reset_index(drop=True),feature_list
 
-# def create_features_target(df,regex_dict,entity_list):
-#     all_regex_list,all_regex_dict = preprocess_regex(entity_list,regex_dict)
-#     # create features
-#     df,feature_list = create_features(df,all_regex_list)
-#     # create targets
-#     df['target'] = df[entity_list].max(axis=1).fillna(0)
-#     # new dataframe both containing targets and features:
-#     df_data = pd.concat([df[feature_list],df['target']],axis=1,sort=False).reset_index(drop=True)
-#     # return
-#     return df_data,all_regex_dict,feature_list
+
+def create_features_target(df: pd.DataFrame, regex_dict: dict, entity_list: list):
+    """Wrapper function to prepare data for before training a model.
+
+    Wrapper function to create the features for sentences given a dictionary with sentences, identifier, title and target columns,
+    a dictionary containing the aliases and abbreviations and a list of entities. Considering a target is required, this function is only
+    called before training a model. This function returns a dataframe containing features created based on the entities in entity_list.
+    Additionally, a dictionary is returned containing all regexes used to create those features (This can be useful for checking on which
+    regexes the features are based later).
+
+    Args:
+        df (pd.DataFrame): dataframe containing article data. Three columns are required: 'sentences', 'identifier', 'title' and one column for
+        each entity in 'entity_list', which are binary columns indicating a sentence is relevant (1) for set entity, or not (0).
+        regex_dict (dict): Dictionary containing aliases and abbreviations for each entity.
+        entity_list (list): List of entities we want to extract features for from the sentences in df.
+
+    Returns:
+        df_features (pd.DataFrame): Dataframe containing the features and targets.
+        all_regex_dict (dict): dictionary containing 'alias' and 'abbrev' keys which contain the regexes used to create the features.
+    """
+    all_regex_list, all_regex_dict = preprocess_regex(entity_list, regex_dict)
+    # create features
+    df, feature_list = create_features(df, all_regex_list)
+    # create targets
+    df["target"] = df[entity_list].max(axis=1).fillna(0)
+    # new dataframe both containing targets and features:
+    df_features = pd.concat(
+        [df[feature_list], df["target"]], axis=1, sort=False
+    ).reset_index(drop=True)
+    # return
+    return df_features, all_regex_dict
 
 
 def create_features_no_target(df: pd.DataFrame, regex_dict: dict, entity_list: list):
@@ -46,7 +67,7 @@ def create_features_no_target(df: pd.DataFrame, regex_dict: dict, entity_list: l
     to create those features (This can be useful for checking on which regexes the features are based later).
 
     Args:
-        df (DataFrame): dataframe containing article data. Three columns are required: 'sentences', 'identifier', 'title'.
+        df (pd.DataFrame): dataframe containing article data. Three columns are required: 'sentences', 'identifier', 'title'.
         regex_dict (dict): Dictionary containing aliases and abbreviations for each entity.
         entity_list (list): List of entities we want to extract features for from the sentences in df.
 
@@ -56,7 +77,7 @@ def create_features_no_target(df: pd.DataFrame, regex_dict: dict, entity_list: l
     """
     all_regex_list, all_regex_dict = preprocess_regex(entity_list, regex_dict)
     # create features
-    df_features = create_features(df, all_regex_list)
+    df_features, _ = create_features(df, all_regex_list)
     # new dataframe both containing targets and features:
     df_features = df_features.reset_index(drop=True)
     # return
@@ -86,10 +107,12 @@ def create_features(df: pd.DataFrame, regex_list: list):
     feature_list = []
 
     # add a position column to the dataframe, which describes the sentence position in the article:
+    feature = "position"
     df["position"] = 1
     df["position"] = df.groupby(["identifier"], sort=False)["position"].transform(
         pd.Series.cumsum
     )
+    feature_list += [feature]
 
     # Length of the aritcle (absolute, number of sentences)
     # already created, df['total_length']
@@ -157,7 +180,7 @@ def create_features(df: pd.DataFrame, regex_list: list):
     df[feature] = [len(x.split(" ")) for x in df.sentences]
     feature_list += [feature]
 
-    return df
+    return df, feature_list
 
 
 def preprocess_regex(entity_list: list, regex_dict: dict):
