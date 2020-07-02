@@ -36,7 +36,6 @@ Functions
 
    This function does the following:
    1. Load spacy and nltk pipes
-
    2. Call the spacy_processing function on the dataframe to use spacy to split the article into sentences and exclude tables.
    3. Call the nltk_processing fucntion on the dataframe to use nltk to split the article into sentences, short sentences are parsed to the nearest longest sentence.
    4. Only selecting those nltk sentences which contain at least one subject, object and verb.
