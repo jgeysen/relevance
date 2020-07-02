@@ -36,14 +36,31 @@ import pandas as pd
 #     # return
 #     return df_data,all_regex_dict,feature_list
 
-# def create_features_no_target(df,regex_dict,entity_list):
-#     all_regex_list,all_regex_dict = preprocess_regex(entity_list,regex_dict)
-#     # create features
-#     df_data,feature_list = create_features(df,all_regex_list)
-#     # new dataframe both containing targets and features:
-#     df_data = df_data.reset_index(drop=True)
-#     # return
-#     return df_data,all_regex_dict,feature_list
+
+def create_features_no_target(df: pd.DataFrame, regex_dict: dict, entity_list: list):
+    """Wrapper function to create the features for sentences.
+
+    Wrapper function to create the features for sentences given a dictionary with sentences, identifier and title columns,
+    a dictionary containing the aliases and abbreviations and a list of entities. This function returns a dataframe
+    containing features created based on the entities in entity_list. Additionally, a dictionary is returned containing all regexes used
+    to create those features (This can be useful for checking on which regexes the features are based later).
+
+    Args:
+        df (DataFrame): dataframe containing article data. Three columns are required: 'sentences', 'identifier', 'title'.
+        regex_dict (dict): Dictionary containing aliases and abbreviations for each entity.
+        entity_list (list): List of entities we want to extract features for from the sentences in df.
+
+    Returns:
+        df_features (pd.DataFrame): Dataframe containing the features
+        all_regex_dict (dict): dictionary containing 'alias' and 'abbrev' keys which contain the regexes used to create the features.
+    """
+    all_regex_list, all_regex_dict = preprocess_regex(entity_list, regex_dict)
+    # create features
+    df_features = create_features(df, all_regex_list)
+    # new dataframe both containing targets and features:
+    df_features = df_features.reset_index(drop=True)
+    # return
+    return df_features, all_regex_dict
 
 
 def create_features(df: pd.DataFrame, regex_list: list):
