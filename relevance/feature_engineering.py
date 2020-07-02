@@ -9,11 +9,10 @@ import pandas as pd
 # feature engineering
 
 # def create_comb_features_target(df: pd.DataFrame, regex_dict: dict, entity_list: list):
-# """To create more datapoints, the entities that are tagged as relevant
-# can be combined by taking taking the combination of each entity.
+#     """can be combined by taking taking the combination of each entity.
 
-# This function
-# """
+#     This function
+#     """
 #     # create all combinations (of any length) of entities in the entity list:
 #     combo_list = list(itertools.chain.from_iterable([itertools.combinations(entity_list,i) for i in range(1,len(entity_list)+1)]))
 #     combo_list = [list(i) for i in combo_list]
@@ -34,7 +33,7 @@ import pandas as pd
 def create_features(
     df: pd.DataFrame, regex_dict: dict, entity_list: list, target=False
 ):
-    """Wrapper function to prepare data for before training a model.
+    """Wrapper function to prepare sentence data for prediction or training.
 
     Wrapper function to create the features for sentences given a dictionary with sentences, identifier, title and target columns,
     a dictionary containing the aliases and abbreviations and a list of entities. Considering a target is required, this function is only
