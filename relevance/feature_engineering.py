@@ -147,16 +147,19 @@ def preprocess_regex(entity_list: list, regex_dict: dict):
     """Preprocess the regexes.
 
     This function parses the regexes and abbreviations given as strings into regexes.
-    Entity list contains the entities, which one wants to find the relevant content for. The dictionary contains both the abbreviations and aliases for each of these entities.
+    Entity list contains the entities, which one wants to find the relevant content for.
+    The dictionary contains both the abbreviations and aliases for each of these entities.
     For example:
-    The name 'Aviva', should match every occurence of Aviva. As we know, Reuters articles (or any other source), can be noisy. Words can be added before or after an occurence
-    of 'Aviva', e.g. 'Avivahas published it's quarterly numbers'.
+    The name 'Aviva', should match every occurence of Aviva. As we know, Reuters articles (or any other source), can be noisy.
+    Words can be added before or after an occurence of 'Aviva', e.g. 'Avivahas published it's quarterly numbers'.
 
-    preprocess_regex returns all regexes for both abbreviations and aliases for the entities in entity_list which will match with noisy mentions of these entities.
+    preprocess_regex returns all regexes for both abbreviations and aliases for the entities in entity_list
+    which will match with noisy mentions of these entities.
 
     Args:
         entity_list (list): List of entity names.
-        regex_dict (dict): Dictionary which has as a key the entity name and 'alias' and 'abbrev'. For each entity, this dictionary contains a list of aliases and abbreviations.
+        regex_dict (dict): Dictionary which has as a key the entity name and 'alias' and 'abbrev'.
+        For each entity, this dictionary contains a list of aliases and abbreviations.
 
     Returns:
         all_regex_list (list): List of all regexes.

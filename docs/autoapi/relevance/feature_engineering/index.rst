@@ -20,7 +20,30 @@ Functions
 
 .. autoapisummary::
 
+   relevance.feature_engineering.create_features
    relevance.feature_engineering.preprocess_regex
+
+
+.. function:: create_features(df: pd.DataFrame, regex_list: list)
+
+   Create features for each sentence in df.
+
+   This function creates features on a sentence level:
+   1. Position of the sentence in the article (relative and absolute).
+   2. Total length of the article.
+   3. Is the entity we are looking for mentioned in the current sentence?
+   4. Is the entity we are looking for mentioned in the title of the article?
+   5. Length of the sentence in characters.
+   6. Length of the sentence in words.
+   7. Has the entity been mentioned in the previous or next sentences (2 x 10 features created).
+
+   :param df: Dataframe with following columns: 'sentences', 'identifier', 'title'
+   :type df: DataFrame
+   :param regex_list: list of regexes to create features for (created by the 'preprocess_regex' functionality)
+   :type regex_list: list
+
+   :returns: *df (DataFrame)* -- The input dataframe with 26 columns added to it, one for each created feature.
+             feature_list (list):
 
 
 .. function:: preprocess_regex(entity_list: list, regex_dict: dict)
