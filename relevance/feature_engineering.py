@@ -8,7 +8,12 @@ import pandas as pd
 
 # feature engineering
 
-# def create_comb_features_target(df,regex_dict,entity_list):
+# def create_comb_features_target(df: pd.DataFrame, regex_dict: dict, entity_list: list):
+# """To create more datapoints, the entities that are tagged as relevant
+# can be combined by taking taking the combination of each entity.
+
+# This function
+# """
 #     # create all combinations (of any length) of entities in the entity list:
 #     combo_list = list(itertools.chain.from_iterable([itertools.combinations(entity_list,i) for i in range(1,len(entity_list)+1)]))
 #     combo_list = [list(i) for i in combo_list]
@@ -17,7 +22,7 @@ import pandas as pd
 #     # loop over all combinations:
 #     for combo in combo_list:
 #         # for one combination of companies, create features:
-#         df_data,all_regex_dict,feature_list = create_features_target1(df,regex_dict,combo)
+#         df_data,all_regex_dict,feature_list = create_features_target(df,regex_dict,combo)
 #         # put the regexes used to create this specific subset in an additional column:
 #         regex_info = pd.Series([all_regex_dict]*len(df_data),name='regexes')
 #         # concatenate everything:
@@ -26,7 +31,9 @@ import pandas as pd
 #     return df_final.reset_index(drop=True),feature_list
 
 
-def create_features_target(df: pd.DataFrame, regex_dict: dict, entity_list: list):
+def create_features1(
+    df: pd.DataFrame, regex_dict: dict, entity_list: list, target=False
+):
     """Wrapper function to prepare data for before training a model.
 
     Wrapper function to create the features for sentences given a dictionary with sentences, identifier, title and target columns,
@@ -45,43 +52,52 @@ def create_features_target(df: pd.DataFrame, regex_dict: dict, entity_list: list
         df_features (pd.DataFrame): Dataframe containing the features and targets.
         all_regex_dict (dict): dictionary containing 'alias' and 'abbrev' keys which contain the regexes used to create the features.
     """
-    all_regex_list, all_regex_dict = preprocess_regex(entity_list, regex_dict)
-    # create features
-    df, feature_list = create_features(df, all_regex_list)
-    # create targets
-    df["target"] = df[entity_list].max(axis=1).fillna(0)
-    # new dataframe both containing targets and features:
-    df_features = pd.concat(
-        [df[feature_list], df["target"]], axis=1, sort=False
-    ).reset_index(drop=True)
+    if target is True:
+        all_regex_list, all_regex_dict = preprocess_regex(entity_list, regex_dict)
+        # create features
+        df, feature_list = create_features(df, all_regex_list)
+        # create targets
+        df["target"] = df[entity_list].max(axis=1).fillna(0)
+        # new dataframe both containing targets and features:
+        df_features = pd.concat(
+            [df[feature_list], df["target"]], axis=1, sort=False
+        ).reset_index(drop=True)
+
+    if target is False:
+        all_regex_list, all_regex_dict = preprocess_regex(entity_list, regex_dict)
+        # create features
+        df_features, _ = create_features(df, all_regex_list)
+        # new dataframe both containing targets and features:
+        df_features = df_features.reset_index(drop=True)
+
     # return
     return df_features, all_regex_dict
 
 
-def create_features_no_target(df: pd.DataFrame, regex_dict: dict, entity_list: list):
-    """Wrapper function to create the features for sentences.
+# def create_features_no_target(df: pd.DataFrame, regex_dict: dict, entity_list: list):
+#     """Wrapper function to create the features for sentences.
 
-    Wrapper function to create the features for sentences given a dictionary with sentences, identifier and title columns,
-    a dictionary containing the aliases and abbreviations and a list of entities. This function returns a dataframe
-    containing features created based on the entities in entity_list. Additionally, a dictionary is returned containing all regexes used
-    to create those features (This can be useful for checking on which regexes the features are based later).
+#     Wrapper function to create the features for sentences given a dictionary with sentences, identifier and title columns,
+#     a dictionary containing the aliases and abbreviations and a list of entities. This function returns a dataframe
+#     containing features created based on the entities in entity_list. Additionally, a dictionary is returned containing all regexes used
+#     to create those features (This can be useful for checking on which regexes the features are based later).
 
-    Args:
-        df (pd.DataFrame): dataframe containing article data. Three columns are required: 'sentences', 'identifier', 'title'.
-        regex_dict (dict): Dictionary containing aliases and abbreviations for each entity.
-        entity_list (list): List of entities we want to extract features for from the sentences in df.
+#     Args:
+#         df (pd.DataFrame): dataframe containing article data. Three columns are required: 'sentences', 'identifier', 'title'.
+#         regex_dict (dict): Dictionary containing aliases and abbreviations for each entity.
+#         entity_list (list): List of entities we want to extract features for from the sentences in df.
 
-    Returns:
-        df_features (pd.DataFrame): Dataframe containing the features
-        all_regex_dict (dict): dictionary containing 'alias' and 'abbrev' keys which contain the regexes used to create the features.
-    """
-    all_regex_list, all_regex_dict = preprocess_regex(entity_list, regex_dict)
-    # create features
-    df_features, _ = create_features(df, all_regex_list)
-    # new dataframe both containing targets and features:
-    df_features = df_features.reset_index(drop=True)
-    # return
-    return df_features, all_regex_dict
+#     Returns:
+#         df_features (pd.DataFrame): Dataframe containing the features
+#         all_regex_dict (dict): dictionary containing 'alias' and 'abbrev' keys which contain the regexes used to create the features.
+#     """
+#     all_regex_list, all_regex_dict = preprocess_regex(entity_list, regex_dict)
+#     # create features
+#     df_features, _ = create_features(df, all_regex_list)
+#     # new dataframe both containing targets and features:
+#     df_features = df_features.reset_index(drop=True)
+#     # return
+#     return df_features, all_regex_dict
 
 
 def create_features(df: pd.DataFrame, regex_list: list):

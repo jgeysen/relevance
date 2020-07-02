@@ -3,8 +3,7 @@ import pandas as pd
 
 from relevance.feature_engineering import (
     create_features,
-    create_features_no_target,
-    create_features_target,
+    create_features1,
     preprocess_regex,
 )
 
@@ -118,7 +117,8 @@ def test_create_features() -> None:
     )
 
 
-def test_create_features_no_target() -> None:
+def test_create_features1() -> None:
+    target = False
     entity_list = ["Aviva"]
     regex_dict = {"Aviva": {"alias": ["Aviva"], "abbrev": ["Aviva"]}}
     input1_df = pd.DataFrame(
@@ -199,14 +199,11 @@ def test_create_features_no_target() -> None:
     #     ],
     # }
     assert np.array_equal(
-        create_features_no_target(input1_df, regex_dict, entity_list)[
-            0
-        ].position.values,
+        create_features1(input1_df, regex_dict, entity_list, target)[0].position.values,
         output1_df.position.values,
     )
 
-
-def test_create_features_target() -> None:
+    target = True
     entity_list = ["Aviva"]
     regex_dict = {"Aviva": {"alias": ["Aviva"], "abbrev": ["Aviva"]}}
     input1_df = pd.DataFrame(
@@ -289,6 +286,6 @@ def test_create_features_target() -> None:
     #     ],
     # }
     assert np.array_equal(
-        create_features_target(input1_df, regex_dict, entity_list)[0].position.values,
+        create_features1(input1_df, regex_dict, entity_list, target)[0].position.values,
         output1_df.position.values,
     )
