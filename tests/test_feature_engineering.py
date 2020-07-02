@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 
 from relevance.feature_engineering import (
+    add_features,
     create_features,
-    create_features1,
     preprocess_regex,
 )
 
@@ -33,7 +33,7 @@ def test_preprocess_regex() -> None:
     )
 
 
-def test_create_features() -> None:
+def test_add_features() -> None:
     input1_df = pd.DataFrame(
         list(
             zip(
@@ -112,12 +112,12 @@ def test_create_features() -> None:
         columns=["sentences", "identifier", "position", "total_length"],
     )
     assert np.array_equal(
-        create_features(input1_df, regex_list)[0].position.values,
+        add_features(input1_df, regex_list)[0].position.values,
         output1_df.position.values,
     )
 
 
-def test_create_features1() -> None:
+def test_create_features() -> None:
     target = False
     entity_list = ["Aviva"]
     regex_dict = {"Aviva": {"alias": ["Aviva"], "abbrev": ["Aviva"]}}
@@ -199,7 +199,7 @@ def test_create_features1() -> None:
     #     ],
     # }
     assert np.array_equal(
-        create_features1(input1_df, regex_dict, entity_list, target)[0].position.values,
+        create_features(input1_df, regex_dict, entity_list, target)[0].position.values,
         output1_df.position.values,
     )
 
@@ -286,6 +286,6 @@ def test_create_features1() -> None:
     #     ],
     # }
     assert np.array_equal(
-        create_features1(input1_df, regex_dict, entity_list, target)[0].position.values,
+        create_features(input1_df, regex_dict, entity_list, target)[0].position.values,
         output1_df.position.values,
     )

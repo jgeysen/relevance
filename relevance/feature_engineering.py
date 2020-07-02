@@ -22,7 +22,7 @@ import pandas as pd
 #     # loop over all combinations:
 #     for combo in combo_list:
 #         # for one combination of companies, create features:
-#         df_data,all_regex_dict,feature_list = create_features_target(df,regex_dict,combo)
+#         df_data,all_regex_dict,feature_list = create_features(df,regex_dict,combo)
 #         # put the regexes used to create this specific subset in an additional column:
 #         regex_info = pd.Series([all_regex_dict]*len(df_data),name='regexes')
 #         # concatenate everything:
@@ -31,7 +31,7 @@ import pandas as pd
 #     return df_final.reset_index(drop=True),feature_list
 
 
-def create_features1(
+def create_features(
     df: pd.DataFrame, regex_dict: dict, entity_list: list, target=False
 ):
     """Wrapper function to prepare data for before training a model.
@@ -43,10 +43,11 @@ def create_features1(
     regexes the features are based later).
 
     Args:
-        df (pd.DataFrame): dataframe containing article data. Three columns are required: 'sentences', 'identifier', 'title' and one column for
-        each entity in 'entity_list', which are binary columns indicating a sentence is relevant (1) for set entity, or not (0).
+        df (pd.DataFrame): dataframe containing article data. Three columns are required: 'sentences', 'identifier' and 'title'.
         regex_dict (dict): Dictionary containing aliases and abbreviations for each entity.
         entity_list (list): List of entities we want to extract features for from the sentences in df.
+        target (bool): boolean which indicates if target values for training are provided in the dataframe. if True, df should contain additionally one column for
+        each entity in 'entity_list', which are binary columns indicating a sentence is relevant (1) for set entity, or not (0).
 
     Returns:
         df_features (pd.DataFrame): Dataframe containing the features and targets.
@@ -55,7 +56,7 @@ def create_features1(
     if target is True:
         all_regex_list, all_regex_dict = preprocess_regex(entity_list, regex_dict)
         # create features
-        df, feature_list = create_features(df, all_regex_list)
+        df, feature_list = add_features(df, all_regex_list)
         # create targets
         df["target"] = df[entity_list].max(axis=1).fillna(0)
         # new dataframe both containing targets and features:
@@ -66,7 +67,7 @@ def create_features1(
     if target is False:
         all_regex_list, all_regex_dict = preprocess_regex(entity_list, regex_dict)
         # create features
-        df_features, _ = create_features(df, all_regex_list)
+        df_features, _ = add_features(df, all_regex_list)
         # new dataframe both containing targets and features:
         df_features = df_features.reset_index(drop=True)
 
@@ -74,7 +75,7 @@ def create_features1(
     return df_features, all_regex_dict
 
 
-def create_features(df: pd.DataFrame, regex_list: list):
+def add_features(df: pd.DataFrame, regex_list: list):
     """Create features for each sentence in df.
 
     This function creates features on a sentence level:
