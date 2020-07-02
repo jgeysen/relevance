@@ -14,7 +14,7 @@ def sentence_splitting(df: pd.DataFrame) -> pd.DataFrame:
     optimized for a dataframe.
 
     This function does the following:
-    1. Load spacy and nltk pipes
+    1. Load spacy and nltk pipes \n
     2. Call the spacy_processing function on the dataframe to use spacy to split the article into sentences and exclude tables.
     3. Call the nltk_processing fucntion on the dataframe to use nltk to split the article into sentences, short sentences are parsed to the nearest longest sentence.
     4. Only selecting those nltk sentences which contain at least one subject, object and verb.
@@ -114,10 +114,10 @@ def nltk_processing(df: pd.DataFrame):
     2. Parse short sentences together with the parse_short_sentences functionality in the sentence_splitting module.
 
     Args:
-        df (pd.DataFrame): kk
+        df (pd.DataFrame): Dataframe containing following columns: 'article_body', 'identifier'
 
     Returns:
-        df_nltk (pd.DataFrame): kk
+        df_nltk (pd.DataFrame): Dataframe containing following columns: 'sentences', 'identifier'
     """
     nltk_pipe = nltk.data.load("tokenizers/punkt/english.pickle")
     # create a nltk_object for each article body in the article_body column:
@@ -144,10 +144,10 @@ def nltk_processing(df: pd.DataFrame):
 def hasNumbers(inputString: str) -> bool:
     """Check if a string contains numbers function.
 
-    Function which returns true if there's a digit in the inputstring.
+    Function which returns true if any character in the inputstring is a digit.
 
     Args:
-            inputString (str): a string
+            inputString (str): a string to be checked for containing digits.
 
     Returns:
             Boolean (bool): True if the inputString contains a digit.
@@ -163,10 +163,12 @@ def exclude_tables(df_spacy: pd.DataFrame) -> pd.DataFrame:
     1. The sentence contains less than 5 actual words AND the sentence contains more than 5 consecutive full stops or spaces
     2. The sentence has more words containing digits than actual words AND the number of words containing digits is not zero.
 
-    If a sentence meet criteria 1 or 2, the sentence is removed from the dataframe.
+    If a sentence meet criteria 1 or 2, the sentence is removed from the dataframe. It's useful to feed sentences to this functionality,
+    because spacy splits tables into many smaller parts, which can easily be differentiated from actual sentences using these criteria.
 
     Args:
-            df_spacy (DataFrame): pandas dataframe containing the articles.
+            df_spacy (DataFrame): pandas dataframe containing the article bodies using column name 'article_body'. No 'identifier'
+            column required because sentences are excluded based on sentence level characteristics.
             The column containing the sentences has as header 'sentences'. No other column is required.
 
     Returns:
@@ -229,17 +231,17 @@ def parse_short_sentences(
 ) -> pd.DataFrame:
     """Parse short sentences to long sentences.
 
-    This function parses short sentences to longer ones.
+    This function parses short sentences with the nearest longer one.
 
     Args:
-        df_nltk (DataFrame): pandas dataframe containing sentences. This dataframe should have the following
+        df_nltk (pd.DataFrame): pandas dataframe containing sentences. This dataframe should have the following
         columns: sentences, identifier (article level).
         min_length (int): The minimum length of the sentences to be parsed into longer ones.
         combination (str): Can have three values; 'previous' indicating short sentences are parsed with
         the previous sentence, 'next' indicating short sentences are parsed with the next sentence.
 
     Returns:
-        df_returns (DataFrame): pandas dataframe containing the sentences after parsing.
+        df_returns (pd.DataFrame): pandas dataframe containing the sentences after parsing.
     """
     # Add a numerical column containing the length of the sentence, when split on spaces.
     df_nltk["length"] = [len(sentence.split(" ")) for sentence in df_nltk.sentences]
@@ -312,11 +314,11 @@ def select_actual_sentences(
     This function uses the spacy dependency labels and selects those sentences which contain a verb, object and subject.
 
     Args:
-        df (DataFrame): A dataframe containing a column 'sentences'.
-        spacy_pipe (spacy_pipe): Spacy pipe object, given on a function level, because loading it outside the function is more efficient.
+        df (pd.DataFrame): A dataframe containing a column 'sentences'. No 'identifier' column required.
+        spacy_pipe (spacy_pipe): Spacy pipeline object, given on a function level, because loading it once outside the function is more efficient.
 
     Returns:
-        df (DataFrame): A dataframe which only contains sentences with at least one verb, subject and object.
+        df (pd.DataFrame): A dataframe which only contains sentences with at least one verb, subject and object.
     """
     # define what verbs, objects and subjects are. This information is found in the Spacy documentation.
     verbs = ["ROOT", "acl"]
