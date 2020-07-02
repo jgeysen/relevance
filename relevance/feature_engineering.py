@@ -114,29 +114,53 @@ The core module of the project
 
 #     return df,feature_list
 
-# def preprocess_regex(entity_list,regex_dict):
-#     # create lists for both aliases and abbreviations, create regexes from each element in these lists.
-#     # return it all.
-#     all_alias = []
-#     all_abbrev = []
-#     for entity in entity_list:
-#         all_alias += regex_dict[entity]['alias']
-#         all_abbrev += regex_dict[entity]['abbrev']
-#     #all_alias_regex,all_abbrev_regex = create_regex(all_alias,all_abbrev)
-#     # lowercase both aliases and replace spaces with optional space regex '\s?':
-#     all_alias_regex = ['\s?'.join(alias.lower().split(' ')) for alias in all_alias if len(alias) > 0]
-#     # add regex combinations to abbreviations; everything except alphabetical characters in front and after:
-#     abbrev_regex1 = ["[^a-zA-Z]+" + abbrev.lower() + "[^a-zA-Z]+" for abbrev in all_abbrev]
-#     ## the sentence can start with the abbrev:
-#     abbrev_regex2 = ["^" + abbrev.lower() + "[^a-zA-Z]+" for abbrev in all_abbrev]
-#     ## the sentence can end with the abbrev:
-#     abbrev_regex3 = ["[^a-zA-Z]+" + abbrev.lower() + "$" for abbrev in all_abbrev]
-#     ## the sentence can only consist of the abbrev (mainly for printing the substrings):
-#     abbrev_regex4 = ["^" + abbrev.lower() + "$" for abbrev in all_abbrev]
-#     # append abbreviation regexes:
-#     all_abbrev_regex = abbrev_regex1 + abbrev_regex2 + abbrev_regex3 + abbrev_regex4
-#     # append to list:
-#     all_regex_list = all_alias_regex + all_abbrev_regex
-#     # append to dictionary:
-#     all_regex_dict = {'alias':all_alias_regex,'abbrev':all_abbrev_regex}
-#     return all_regex_list,all_regex_dict
+
+def preprocess_regex(entity_list: list, regex_dict: dict) -> list:
+    """Preprocess the regexes.
+
+    This function parses the regexes and abbreviations given as strings into regexes.
+    Entity list contains the entities, which one wants to find the relevant content for. The dictionary contains both the abbreviations and aliases for each of these entities.
+    For example:
+    The name 'Aviva', should match every occurence of Aviva. As we know, Reuters articles (or any other source), can be noisy. Words can be added before or after an occurence
+    of 'Aviva', e.g. 'Avivahas published it's quarterly numbers'.
+
+    preprocess_regex returns all regexes for both abbreviations and aliases for the entities in entity_list which will match with noisy mentions of these entities.
+
+    Args:
+        entity_list (list): List of entity names.
+        regex_dict (dictionary): Dictionary which has as a key the entity name and 'alias' and 'abbrev'. For each entity, this dictionary contains a list of aliases and abbreviations.
+
+    Returns:
+        all_regex_list (list): List of all regexes.
+        all_regex_dict (dictionary): Dictionary of all aliases and abbrevations. This dictionary contains two keys: 'alias' and 'abbrev'.
+    """
+    # create lists for both aliases and abbreviations, create regexes from each element in these lists.
+    # return it all.
+    all_alias = []
+    all_abbrev = []
+    for entity in entity_list:
+        all_alias += regex_dict[entity]["alias"]
+        all_abbrev += regex_dict[entity]["abbrev"]
+    # all_alias_regex,all_abbrev_regex = create_regex(all_alias,all_abbrev)
+    # lowercase both aliases and replace spaces with optional space regex '\s?':
+    all_alias_regex = [
+        r"\s?".join(alias.lower().split(" ")) for alias in all_alias if len(alias) > 0
+    ]
+    # add regex combinations to abbreviations; everything except alphabetical characters in front and after:
+    abbrev_regex1 = [
+        "[^a-zA-Z]+" + abbrev.lower() + "[^a-zA-Z]+" for abbrev in all_abbrev
+    ]
+    # the sentence can start with the abbrev:
+    abbrev_regex2 = ["^" + abbrev.lower() + "[^a-zA-Z]+" for abbrev in all_abbrev]
+    # the sentence can end with the abbrev:
+    abbrev_regex3 = ["[^a-zA-Z]+" + abbrev.lower() + "$" for abbrev in all_abbrev]
+    # the sentence can only consist of the abbrev (mainly for printing the substrings):
+    abbrev_regex4 = ["^" + abbrev.lower() + "$" for abbrev in all_abbrev]
+    # append abbreviation regexes:
+    all_abbrev_regex = abbrev_regex1 + abbrev_regex2 + abbrev_regex3 + abbrev_regex4
+    # append to list:
+    all_regex_list = all_alias_regex + all_abbrev_regex
+    # append to dictionary:
+    # all_regex_dict = {"alias": all_alias_regex, "abbrev": all_abbrev_regex}
+
+    return all_regex_list  # , all_regex_dict
