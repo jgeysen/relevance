@@ -45,7 +45,7 @@ The core module of the project
 #     # return
 #     return df_data,all_regex_dict,feature_list
 
-# def create_features(df,regex_list):
+# def create_features(df: pd.DataFrame,regex_list: list) -> :
 #     feature_list = []
 
 #     # add a position column to the dataframe, which describes the sentence position in the article:
@@ -115,7 +115,7 @@ The core module of the project
 #     return df,feature_list
 
 
-def preprocess_regex(entity_list: list, regex_dict: dict) -> list:
+def preprocess_regex(entity_list: list, regex_dict: dict):
     """Preprocess the regexes.
 
     This function parses the regexes and abbreviations given as strings into regexes.
@@ -128,11 +128,11 @@ def preprocess_regex(entity_list: list, regex_dict: dict) -> list:
 
     Args:
         entity_list (list): List of entity names.
-        regex_dict (dictionary): Dictionary which has as a key the entity name and 'alias' and 'abbrev'. For each entity, this dictionary contains a list of aliases and abbreviations.
+        regex_dict (dict): Dictionary which has as a key the entity name and 'alias' and 'abbrev'. For each entity, this dictionary contains a list of aliases and abbreviations.
 
     Returns:
         all_regex_list (list): List of all regexes.
-        all_regex_dict (dictionary): Dictionary of all aliases and abbrevations. This dictionary contains two keys: 'alias' and 'abbrev'.
+        all_regex_dict (dict): Dictionary of all aliases and abbrevations. This dictionary contains two keys: 'alias' and 'abbrev'.
     """
     # create lists for both aliases and abbreviations, create regexes from each element in these lists.
     # return it all.
@@ -161,6 +161,6 @@ def preprocess_regex(entity_list: list, regex_dict: dict) -> list:
     # append to list:
     all_regex_list = all_alias_regex + all_abbrev_regex
     # append to dictionary:
-    # all_regex_dict = {"alias": all_alias_regex, "abbrev": all_abbrev_regex}
+    all_regex_dict = {"alias": all_alias_regex, "abbrev": all_abbrev_regex}
 
-    return all_regex_list  # , all_regex_dict
+    return all_regex_list, all_regex_dict
