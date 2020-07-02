@@ -32,7 +32,6 @@ import spacy
 #                                                       'merge_noun_chunks',
 #                                                       'merge_entities',
 #                                                       'merge_subtokens'])
-#     nltk_pipe = nltk.data.load('tokenizers/punkt/english.pickle')
 #     # throw out: 'Reuters euro Eurobond new issue index'
 #     #df = df[df.title != 'Reuters euro Eurobond new issue index'].reset_index(drop=True)
 
@@ -43,9 +42,92 @@ import spacy
 #     # final check: Each sentence contains a subject, object and verb, using spacy again:
 #     df_sents = select_actual_sentences(df_sents,spacy_pipe)
 #     #return sents
-#     return df_sents
 
-# following function checks if the given inputstring contains a digit:
+#   return df_sents
+
+
+def spacy_processing(df: pd.DataFrame, spacy_pipe: spacy.pipeline) -> pd.DataFrame:
+    """Processing the articles using spacy functionality.
+
+    This function does the following:
+    1. The spacy sentisizer splits the articles in sentences.
+    2. Using the 'exclude_tables' functionality in the sentence_splitting module, tables can be differentiated from sentences.
+    3. After excluding the tables from the article, the sentences are parsed back together into a processed article body and returned.
+
+    Args:
+        df (DataFrame): Dataframe containing a column 'article_body' containing article bodies.
+        spacy_pipe (spacy_pipe): spacy pipe object, called/loaded/passed on a function level for efficiency.
+
+    Returns:
+        df_new (DataFrame): Dataframe containing article body after excluding tables.
+    """
+    # SPACY:
+    df["spacy_object"] = [spacy_pipe(x) for x in df.article_body.array]
+    df["sentences"] = [
+        [sent.string.strip() for sent in doc.sents] for doc in df.spacy_object.array
+    ]
+    lens = [len(item) for item in df["sentences"]]
+    df_spacy = pd.DataFrame(
+        {
+            "identifier": np.repeat(df["identifier"].values, lens),
+            # "title" : np.repeat(df['title'].values,lens),
+            "sentences": np.concatenate(df["sentences"].values),
+        }
+    )
+
+    # exclude table sentences:
+    df_spacy = exclude_tables(df_spacy)
+    # Parse back together:ze
+    df_new = (
+        df_spacy.groupby("identifier")["sentences"]
+        .apply(list)
+        .reset_index(name="sentences_1")
+    )
+    # parse the sentences back together using join:
+    df_new["article_body"] = [" ".join(sentence) for sentence in df_new.sentences_1]
+    # parse the sentences back together using join:
+    # df_new["article_body"] = [
+    #    re.sub(r"\n|\r", " ", article) for article in df_new.article_body
+    # ]
+
+    df_new = df_new.drop(["sentences_1"], axis=1)
+
+    return df_new
+
+
+def nltk_processing(df: pd.DataFrame):
+    """Processing the articles using NLTK.
+
+    This function does the following:
+    1. Use the NLTK senticiser to split the article into sentences.
+    2. Parse short sentences together with the parse_short_sentences functionality in the sentence_splitting module.
+
+    Args:
+        df (pd.DataFrame): kk
+
+    Returns:
+        df_nltk (pd.DataFrame): kk
+    """
+    nltk_pipe = nltk.data.load("tokenizers/punkt/english.pickle")
+    # create a nltk_object for each article body in the article_body column:
+    df["nltk_object"] = [nltk_pipe.tokenize(doc) for doc in df.article_body]
+    # Extract the sentences from the nltk object, save as a list in the 'sentences' column:
+    df["sentences"] = [
+        [sentence for (n, sentence) in enumerate(doc)] for doc in df.nltk_object
+    ]
+    # list containing the lengths of the sentences:
+    lens = [len(item) for item in df["sentences"]]
+    # unfold the sentences in the list in the sentence column to an equal number of rows in df_nltk dataframe:
+    df_nltk = pd.DataFrame(
+        {
+            "identifier": np.repeat(df["identifier"].values, lens),
+            # "title" : np.repeat(df['title'].values,lens),
+            "sentences": np.concatenate(df["sentences"].values),
+        }
+    )
+    # NLTK senticizer is very accurate. If there would be extremely short sentences left, merge them with the nearest long sentence:
+    df_nltk = parse_short_sentences(df_nltk, min_length=10, combination="previous")
+    return df_nltk
 
 
 def hasNumbers(inputString: str) -> bool:
@@ -256,87 +338,3 @@ def select_actual_sentences(
     )
 
     return df
-
-
-def spacy_processing(df: pd.DataFrame, spacy_pipe: spacy.pipeline) -> pd.DataFrame:
-    """Processing the articles using spacy functionality.
-
-    This function does the following:
-    1. The spacy sentisizer splits the articles in sentences.
-    2. Using the 'exclude_tables' functionality in the sentence_splitting module, tables can be differentiated from sentences.
-    3. After excluding the tables from the article, the sentences are parsed back together into a processed article body and returned.
-
-    Args:
-        df (DataFrame): Dataframe containing a column 'article_body' containing article bodies.
-        spacy_pipe (spacy_pipe): spacy pipe object, called/loaded/passed on a function level for efficiency.
-
-    Returns:
-        df_new (DataFrame): Dataframe containing article body after excluding tables.
-    """
-    # SPACY:
-    df["spacy_object"] = [spacy_pipe(x) for x in df.article_body.array]
-    df["sentences"] = [
-        [sent.string.strip() for sent in doc.sents] for doc in df.spacy_object.array
-    ]
-    lens = [len(item) for item in df["sentences"]]
-    df_spacy = pd.DataFrame(
-        {
-            "identifier": np.repeat(df["identifier"].values, lens),
-            # "title" : np.repeat(df['title'].values,lens),
-            "sentences": np.concatenate(df["sentences"].values),
-        }
-    )
-
-    # exclude table sentences:
-    df_spacy = exclude_tables(df_spacy)
-    # Parse back together:ze
-    df_new = (
-        df_spacy.groupby("identifier")["sentences"]
-        .apply(list)
-        .reset_index(name="sentences_1")
-    )
-    # parse the sentences back together using join:
-    df_new["article_body"] = [" ".join(sentence) for sentence in df_new.sentences_1]
-    # parse the sentences back together using join:
-    # df_new["article_body"] = [
-    #    re.sub(r"\n|\r", " ", article) for article in df_new.article_body
-    # ]
-
-    df_new = df_new.drop(["sentences_1"], axis=1)
-
-    return df_new
-
-
-def nltk_processing(df: pd.DataFrame):
-    """Processing the articles using NLTK.
-
-    This function does the following:
-    1. Use the NLTK senticiser to split the article into sentences.
-    2. Parse short sentences together with the parse_short_sentences functionality in the sentence_splitting module.
-
-    Args:
-        df (pd.DataFrame): kk
-
-    Returns:
-        df_nltk (pd.DataFrame): kk
-    """
-    nltk_pipe = nltk.data.load("tokenizers/punkt/english.pickle")
-    # create a nltk_object for each article body in the article_body column:
-    df["nltk_object"] = [nltk_pipe.tokenize(doc) for doc in df.article_body]
-    # Extract the sentences from the nltk object, save as a list in the 'sentences' column:
-    df["sentences"] = [
-        [sentence for (n, sentence) in enumerate(doc)] for doc in df.nltk_object
-    ]
-    # list containing the lengths of the sentences:
-    lens = [len(item) for item in df["sentences"]]
-    # unfold the sentences in the list in the sentence column to an equal number of rows in df_nltk dataframe:
-    df_nltk = pd.DataFrame(
-        {
-            "identifier": np.repeat(df["identifier"].values, lens),
-            # "title" : np.repeat(df['title'].values,lens),
-            "sentences": np.concatenate(df["sentences"].values),
-        }
-    )
-    # NLTK senticizer is very accurate. If there would be extremely short sentences left, merge them with the nearest long sentence:
-    df_nltk = parse_short_sentences(df_nltk, min_length=10, combination="previous")
-    return df_nltk
