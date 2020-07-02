@@ -4,11 +4,9 @@ Article cleaning and relevance filtering project
 The core module of the project
 """
 
-# import re
 
-# import nltk
-
-# import packages
+import nltk
+import numpy as np
 import pandas as pd
 import spacy
 
@@ -311,37 +309,36 @@ def select_actual_sentences(
 #     return df_new
 
 
-# def nltk_processing(df: pd.DataFrame,) -> pd.DataFrame:
-#     """Processing the articles using NLTK.
+def nltk_processing(df: pd.DataFrame):
+    """Processing the articles using NLTK.
 
-#     This function does the following:
-#     1. Use the NLTK senticiser to split the article into sentences.
-#     2. Parse short sentences together with the parse_short_sentences functionality in the sentence_splitting module.
+    This function does the following:
+    1. Use the NLTK senticiser to split the article into sentences.
+    2. Parse short sentences together with the parse_short_sentences functionality in the sentence_splitting module.
 
-#     Args:
-#         df (DataFrame):
-#         nltk_pipe (nltk_pipe):
+    Args:
+        df (pd.DataFrame): kk
 
-#     Returns:
-#         df_nltk (DataFrame):
-#     """
-#     nltk_pipe = nltk.data.load("tokenizers/punkt/english.pickle")
-#     # create a nltk_object for each article body in the article_body column:
-#     df["nltk_object"] = [nltk_pipe.tokenize(doc) for doc in df.article_body]
-#     # Extract the sentences from the nltk object, save as a list in the 'sentences' column:
-#     df["sentences"] = [
-#         [sentence for (n, sentence) in enumerate(doc)] for doc in df.nltk_object
-#     ]
-#     # list containing the lengths of the sentences:
-#     lens = [len(item) for item in df["sentences"]]
-#     # unfold the sentences in the list in the sentence column to an equal number of rows in df_nltk dataframe:
-#     df_nltk = pd.DataFrame(
-#         {
-#             "identifier": np.repeat(df["identifier"].values, lens),
-#             # "title" : np.repeat(df['title'].values,lens),
-#             "sentences": np.concatenate(df["sentences"].values),
-#         }
-#     )
-#     # NLTK senticizer is very accurate. If there would be extremely short sentences left, merge them with the nearest long sentence:
-#     # df_sents = parse_short_sentences(df_nltk, min_length=10, combination="previous")
-#     return df_nltk
+    Returns:
+        df_nltk (pd.DataFrame): kk
+    """
+    nltk_pipe = nltk.data.load("tokenizers/punkt/english.pickle")
+    # create a nltk_object for each article body in the article_body column:
+    df["nltk_object"] = [nltk_pipe.tokenize(doc) for doc in df.article_body]
+    # Extract the sentences from the nltk object, save as a list in the 'sentences' column:
+    df["sentences"] = [
+        [sentence for (n, sentence) in enumerate(doc)] for doc in df.nltk_object
+    ]
+    # list containing the lengths of the sentences:
+    lens = [len(item) for item in df["sentences"]]
+    # unfold the sentences in the list in the sentence column to an equal number of rows in df_nltk dataframe:
+    df_nltk = pd.DataFrame(
+        {
+            "identifier": np.repeat(df["identifier"].values, lens),
+            # "title" : np.repeat(df['title'].values,lens),
+            "sentences": np.concatenate(df["sentences"].values),
+        }
+    )
+    # NLTK senticizer is very accurate. If there would be extremely short sentences left, merge them with the nearest long sentence:
+    df_nltk = parse_short_sentences(df_nltk, min_length=10, combination="previous")
+    return df_nltk
