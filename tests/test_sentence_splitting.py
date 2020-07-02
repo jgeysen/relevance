@@ -8,6 +8,7 @@ from relevance.sentence_splitting import (
     nltk_processing,
     parse_short_sentences,
     select_actual_sentences,
+    spacy_processing,
 )
 
 
@@ -197,45 +198,45 @@ def test_select_actual_sentences() -> None:
     )
 
 
-# def test_spacy_processing() -> None:
-#     spacy_pipe = spacy.load(
-#         "en_core_web_sm",
-#         disable=[
-#             "tagger",
-#             "ner",
-#             "entity_linker",
-#             "merge_noun_chunks",
-#             "merge_entities",
-#             "merge_subtokens",
-#         ],
-#     )
-#     input1_df = pd.DataFrame(
-#         list(
-#             zip(
-#                 [
-#                     "This is the first sentence of the first article. This is a much longer intermediate sentence of the article, rather short sentences before and after should be parsed to this one."
-#                 ],
-#                 ["article_id1"],
-#             )
-#         ),
-#         columns=["article_body", "identifier"],
-#     )
-#     output1_df = pd.DataFrame(
-#         list(
-#             zip(
-#                 [
-#                     "This is the first sentence of the first article. This is a much longer intermediate sentence of the article, rather short sentences before and after should be parsed to this one."
-#                 ],
-#                 ["article_id1"],
-#             )
-#         ),
-#         columns=["article_body", "identifier"],
-#     )
+def test_spacy_processing() -> None:
+    spacy_pipe = spacy.load(
+        "en_core_web_sm",
+        disable=[
+            "tagger",
+            "ner",
+            "entity_linker",
+            "merge_noun_chunks",
+            "merge_entities",
+            "merge_subtokens",
+        ],
+    )
+    input1_df = pd.DataFrame(
+        list(
+            zip(
+                [
+                    "This is the first sentence of the first article. This is a much longer intermediate sentence of the article, rather short sentences before and after should be parsed to this one."
+                ],
+                ["article_id1"],
+            )
+        ),
+        columns=["article_body", "identifier"],
+    )
+    output1_df = pd.DataFrame(
+        list(
+            zip(
+                [
+                    "This is the first sentence of the first article. This is a much longer intermediate sentence of the article, rather short sentences before and after should be parsed to this one."
+                ],
+                ["article_id1"],
+            )
+        ),
+        columns=["article_body", "identifier"],
+    )
 
-#     assert np.array_equal(
-#         spacy_processing(input1_df, spacy_pipe).article_body.values,
-#         output1_df.article_body.values,
-#     )
+    assert np.array_equal(
+        spacy_processing(input1_df, spacy_pipe).article_body.values,
+        output1_df.article_body.values,
+    )
 
 
 def test_nltk_processing() -> None:
