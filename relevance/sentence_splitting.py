@@ -311,7 +311,7 @@ def select_actual_sentences(
 #     return df_new
 
 
-# def nltk_processing(df: pd.DataFrame,) -> pd.DataFrame:  # nltk_pipe: nltk.pipeline
+# def nltk_processing(df: pd.DataFrame,) -> pd.DataFrame:
 #     """Processing the articles using NLTK.
 
 #     This function does the following:

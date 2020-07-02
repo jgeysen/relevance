@@ -4,7 +4,7 @@ Article cleaning and relevance filtering project
 The core module of the project
 """
 # import packages
-
+import pandas as pd
 
 # feature engineering
 
@@ -45,74 +45,102 @@ The core module of the project
 #     # return
 #     return df_data,all_regex_dict,feature_list
 
-# def create_features(df: pd.DataFrame,regex_list: list) -> :
-#     feature_list = []
 
-#     # add a position column to the dataframe, which describes the sentence position in the article:
-#     df['position'] = 1
-#     df['position'] = df.groupby(['identifier'],sort=False)['position'].transform(pd.Series.cumsum)
+def create_features(df: pd.DataFrame, regex_list: list):
+    """Create features for each sentence in df.
 
-#     # Length of the aritcle (absolute, number of sentences)
-#     # already created, df['total_length']
-#     feature = 'total_length1'
-#     art_lengths = pd.DataFrame(df.groupby(['identifier'],sort=False).size(),columns=[feature]).reset_index(drop=False)
-#     df = pd.merge(df, art_lengths, on="identifier")
-#     feature_list += ['total_length1']
+    This function creates features on a sentence level:
+    1. Position of the sentence in the article (relative and absolute).
+    2. Total length of the article.
+    3. Is the entity we are looking for mentioned in the current sentence?
+    4. Is the entity we are looking for mentioned in the title of the article?
+    5. Length of the sentence in characters.
+    6. Length of the sentence in words.
+    7. Has the entity been mentioned in the previous or next sentences (2 x 10 features created).
 
-#     # company name mentioned in sentence:
-#     regex = '|'.join(regex_list)
-#     feature = 'entity_mention'
-#     df[feature] = df.sentences.str.lower().str.contains(regex,regex=True)
-#     df[feature] = [1 if x is True else 0 for x in df[feature].tolist()]
-#     feature_list += [feature]
+    Args:
+        df (DataFrame): Dataframe with following columns: 'sentences', 'identifier', 'title'
+        regex_list (list): list of regexes to create features for (created by the 'preprocess_regex' functionality)
 
-#     # ## print words in articles containing entity name
-#     # print('The following combinations of the abbreviations were used to match the entitities:')
-#     # print('\n')
-#     # entity_tokens = []
-#     # for sent in df[df['entity_mention']==1].sentences:
-#     #     tokens = sent.split(' ')
-#     #     entity_tokens += [token.lower() for token in tokens if bool(re.search(regex,token.lower())) == True]
-#     # print(set(entity_tokens))
-#     # print('\n')
+    Returns:
+        df (DataFrame): The input dataframe with 26 columns added to it, one for each created feature.
+        feature_list (list):
+    """
+    feature_list = []
 
-#     # company name mentioned in previous sentence/next sentence(s)
-#     x = 10
-#     for i in range(1,x+1):
-#         feature = 'entity_mention_' + str(i) + '_sentence_earlier'
-#         df[feature] = df.groupby(['identifier'],sort=False)['entity_mention'].shift(i,fill_value=0)
-#         feature_list += [feature]
+    # add a position column to the dataframe, which describes the sentence position in the article:
+    df["position"] = 1
+    df["position"] = df.groupby(["identifier"], sort=False)["position"].transform(
+        pd.Series.cumsum
+    )
 
-#         feature = 'entity_mention_' + str(i) + '_sentence_later'
-#         df[feature] = df.groupby(['identifier'],sort=False)['entity_mention'].shift(-i,fill_value=0)
-#         feature_list += [feature]
+    # Length of the aritcle (absolute, number of sentences)
+    # already created, df['total_length']
+    feature = "total_length1"
+    art_lengths = pd.DataFrame(
+        df.groupby(["identifier"], sort=False).size(), columns=[feature]
+    ).reset_index(drop=False)
+    df = pd.merge(df, art_lengths, on="identifier")
+    feature_list += ["total_length1"]
 
-#     # Company name mentioned in the title:
-#     feature = 'title_mention'
-#     regex = '|'.join(regex_list)
-#     df[feature] = df.identifier.str.lower().str.contains(regex,regex=True)
-#     # depending which identifier is used, use the title or the identifier if the
-#     # title is used as identifier (not ideal).
-#     #df[feature] = df.title.str.lower().str.contains(regex,regex=True)
-#     df[feature] = [1 if x is True else 0 for x in df[feature].tolist()]
-#     feature_list += [feature]
+    # company name mentioned in sentence:
+    regex = "|".join(regex_list)
+    feature = "entity_mention"
+    df[feature] = df.sentences.str.lower().str.contains(regex, regex=True)
+    df[feature] = [1 if x is True else 0 for x in df[feature].tolist()]
+    feature_list += [feature]
 
-#     # Position of the sentence in the article (sentence position/article sent length):
-#     feature = 'rel_position_in_art'
-#     df[feature] = df['position'].values/df['total_length1'].values
-#     feature_list += [feature]
+    # ## print words in articles containing entity name
+    # print('The following combinations of the abbreviations were used to match the entitities:')
+    # print('\n')
+    # entity_tokens = []
+    # for sent in df[df['entity_mention']==1].sentences:
+    #     tokens = sent.split(' ')
+    #     entity_tokens += [token.lower() for token in tokens if bool(re.search(regex,token.lower())) == True]
+    # print(set(entity_tokens))
+    # print('\n')
 
-#     # Length of the sentence (characters):
-#     feature = 'sent_length_char'
-#     df[feature] = df.sentences.str.len()
-#     feature_list += [feature]
+    # company name mentioned in previous sentence/next sentence(s)
+    x = 10
+    for i in range(1, x + 1):
+        feature = "entity_mention_" + str(i) + "_sentence_earlier"
+        df[feature] = df.groupby(["identifier"], sort=False)["entity_mention"].shift(
+            i, fill_value=0
+        )
+        feature_list += [feature]
 
-#     # Length of the sentence (tokens/words):
-#     feature = 'sent_length_words'
-#     df[feature] = [len(x.split(' ')) for x in df.sentences]
-#     feature_list += [feature]
+        feature = "entity_mention_" + str(i) + "_sentence_later"
+        df[feature] = df.groupby(["identifier"], sort=False)["entity_mention"].shift(
+            -i, fill_value=0
+        )
+        feature_list += [feature]
 
-#     return df,feature_list
+    # Company name mentioned in the title:
+    feature = "title_mention"
+    regex = "|".join(regex_list)
+    df[feature] = df.identifier.str.lower().str.contains(regex, regex=True)
+    # depending which identifier is used, use the title or the identifier if the
+    # title is used as identifier (not ideal).
+    # df[feature] = df.title.str.lower().str.contains(regex,regex=True)
+    df[feature] = [1 if x is True else 0 for x in df[feature].tolist()]
+    feature_list += [feature]
+
+    # Position of the sentence in the article (sentence position/article sent length):
+    feature = "rel_position_in_art"
+    df[feature] = df["position"].values / df["total_length1"].values
+    feature_list += [feature]
+
+    # Length of the sentence (characters):
+    feature = "sent_length_char"
+    df[feature] = df.sentences.str.len()
+    feature_list += [feature]
+
+    # Length of the sentence (tokens/words):
+    feature = "sent_length_words"
+    df[feature] = [len(x.split(" ")) for x in df.sentences]
+    feature_list += [feature]
+
+    return df
 
 
 def preprocess_regex(entity_list: list, regex_dict: dict):
