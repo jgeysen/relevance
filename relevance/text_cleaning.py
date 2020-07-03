@@ -139,6 +139,7 @@ def add_spacing(article: str) -> str:
     # if e.g. '1.2 billion' is mentioned, this shouldn't change!
     article = re.sub(r"([a-z]+)([0-9]+(\.[0-9]+)?(\,[0-9]+)?\.?)", r"\1 \2", article)
     article = re.sub(r"([0-9]+(\.[0-9]+)?(\,[0-9]+)?\.?)([a-z]+)", r"\1 \4", article)
+    article = re.sub(r"([0-9]+(\.[0-9]+)?(\,[0-9]+)?\.?)([A-Z]+)", r"\1 \4", article)
 
     # Add spaces before and after parentheses,
     # except when after the parentheses there is any kind of punctuation.
