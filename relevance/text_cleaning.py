@@ -32,10 +32,10 @@ def remove_reuters_lingo(article: str) -> str:
     specific language and structure. Many symbols with no semantical meaning are being removed.
 
     Args:
-      article (str): The article that requires cleaning.
+        article (str): The article that requires cleaning.
 
     Returns:
-      new_article (str): The cleaned article.
+        new_article (str): The cleaned article.
     """
     # replace by spacing:
     # Remove company codes, article references and hyperlinks:
@@ -123,10 +123,10 @@ def add_spacing(article: str) -> str:
     sentence splitting functions.
 
     Args:
-      article (str): The article that requires spacing.
+        article (str): The article that requires spacing.
 
     Returns:
-      new_article (str): The article provided with spacing in the right locations.
+        new_article (str): The article provided with spacing in the right locations.
     """
     # Add space after the word 'premarket' and 'pct' (occurs often without spacing in the reuters library):
     article = re.sub(r"premarket", r"premarket ", article)
@@ -180,10 +180,10 @@ def remove_spacing(article: str) -> str:
     this is because we will later filter on spaces to recognize tables.
 
     Args:
-      article (str): The article that requires spacing to be removed.
+        article (str): The article that requires spacing to be removed.
 
     Returns:
-      new_article (str): The article where spacing has been removed.
+        new_article (str): The article where spacing has been removed.
     """
     # remove spaces before comma's.
     article = re.sub(r"\s\,", r",", article)

@@ -14,18 +14,22 @@ def sentence_splitting(df: pd.DataFrame) -> pd.DataFrame:
     optimized for a dataframe.
 
     This function does the following:
-    1. Load spacy and nltk pipes
-    2. Call the spacy_processing function on the dataframe to use spacy to split the article into sentences and exclude tables.
-    3. Call the nltk_processing fucntion on the dataframe to use nltk to split the article into sentences, short sentences are parsed to the nearest longest sentence.
-    4. Only selecting those nltk sentences which contain at least one subject, object and verb.
 
-    It returns a dataframe with sentences.
+    1. Load spacy and nltk pipes
+
+    2. Call the spacy_processing function on the dataframe to use spacy to split the article into sentences and exclude tables. Parse the resulting sentences back to article level based on the identifier.
+
+    3. Call the nltk_processing function on the articles resulting from step 2 to split the article into sentences. Short sentences are parsed to the nearest longest sentence.
+
+    4. Only selecting those sentences from step 3 which contain at least one subject, object and verb.
+
+    A dataframe containing the sentences resulting from step 4 and their respective article identifier are returned (columns 'sentences' and 'identifier')
 
     Args:
-        df: (DataFrame): A dataframe containing
+        df: (pd.DataFrame): A dataframe containing article bodies and article identifiers ('article_body' and 'identifier')
 
     Returns:
-         df_sents (DataFrame):
+        df_sents (pd.DataFrame): A dataframe containing sentences and article identifiers ('sentences' and 'identifier')
     """
     spacy_pipe = spacy.load(
         "en_core_web_sm",
@@ -61,17 +65,20 @@ def spacy_processing(df: pd.DataFrame, spacy_pipe: spacy.pipeline) -> pd.DataFra
     """Processing the articles using spacy functionality.
 
     This function does the following:
-    1. The spacy sentisizer splits the articles in sentences.
+
+    1. Use the spacy sentence splitting model to split the articles into sentences.
+
     2. Using the 'exclude_tables' functionality in the sentence_splitting module, tables can be differentiated from sentences.
+
     3. After excluding the tables from the article, the sentences are parsed back together into a processed article body and returned.
 
     Args:
-        df (DataFrame): Dataframe containing a column 'article_body' containing article bodies and a column 'identifier' containing an identifier
+        df (pd.DataFrame): Dataframe containing a column 'article_body' containing article bodies and a column 'identifier' containing an identifier
         for each article.
-        spacy_pipe (spacy_pipe): spacy pipe object, called/loaded/passed on a function level for efficiency.
+        spacy_pipe (spacy.pipeline): spacy pipe object, called/loaded/passed on a function level for efficiency.
 
     Returns:
-        df_new (DataFrame): Dataframe containing article body after excluding tables.
+        df_new (pd.DataFrame): Dataframe containing article body after excluding tables.
     """
     # SPACY:
     df["spacy_object"] = [spacy_pipe(x) for x in df.article_body.array]
@@ -110,7 +117,9 @@ def nltk_processing(df: pd.DataFrame):
     """Processing the articles using NLTK.
 
     This function does the following:
-    1. Use the NLTK senticiser to split the article into sentences.
+
+    1. Use the NLTK sentence splitting model to split the article into sentences.
+
     2. Parse short sentences together with the parse_short_sentences functionality in the sentence_splitting module.
 
     Args:
@@ -158,21 +167,21 @@ def hasNumbers(inputString: str) -> bool:
 def exclude_tables(df_spacy: pd.DataFrame) -> pd.DataFrame:
     """Exclude tables function.
 
-    This function excludes tables from an reuters article. Tables are not sentences, so they have to be removed.
-    Sentences are deemed to be part of a table if they meet the following criteria:
-    1. The sentence contains less than 5 actual words AND the sentence contains more than 5 consecutive full stops or spaces
-    2. The sentence has more words containing digits than actual words AND the number of words containing digits is not zero.
+    This function excludes tables from an reuters article. Tables aren't sentences, so they are removed.
+    If a string meets the following criteria, it's deemed (part of) a table:
 
-    If a sentence meet criteria 1 or 2, the sentence is removed from the dataframe. It's useful to feed sentences to this functionality,
-    because spacy splits tables into many smaller parts, which can easily be differentiated from actual sentences using these criteria.
+    1. The string contains less than 5 actual words (=not containing any digits) AND the sentence contains more than 5 consecutive full stops or spaces
+
+    2. The string has more words containing digits than actual words AND the number of words containing digits is not zero.
+
+    If a 'sentence' meets criteria 1 or 2 (or both), the 'sentence' is removed from the dataframe. It's useful to feed sentences split by spacy to this functionality,
+    because spacy splits tables into a number of smaller parts, which can easily be differentiated from actual sentences using these criteria.
 
     Args:
-            df_spacy (DataFrame): pandas dataframe containing the article bodies using column name 'article_body'. No 'identifier'
-            column required because sentences are excluded based on sentence level characteristics.
-            The column containing the sentences has as header 'sentences'. No other column is required.
+        df_spacy (pd.DataFrame): pandas dataframe containing the article bodies using column name 'article_body'. No 'identifier' column required because sentences are excluded based on sentence level characteristics. The column containing the sentences has as header 'sentences'. No other column is required.
 
     Returns:
-            df_returns (DataFrame): pandas dataframe returning the sentences where words containing digits have been dropped.
+        df_returns (pd.DataFrame): pandas dataframe returning the sentences where words containing digits have been dropped.
     """
     # split the sentences on spaces, store as list for each sentence
     df_spacy["split_on_spaces"] = df_spacy.sentences.str.split()
@@ -237,8 +246,7 @@ def parse_short_sentences(
         df_nltk (pd.DataFrame): pandas dataframe containing sentences. This dataframe should have the following
         columns: sentences, identifier (article level).
         min_length (int): The minimum length of the sentences to be parsed into longer ones.
-        combination (str): Can have three values; 'previous' indicating short sentences are parsed with
-        the previous sentence, 'next' indicating short sentences are parsed with the next sentence.
+        combination (str): Can have three values; 'previous' indicating short sentences are parsed with the previous sentence, 'next' indicating short sentences are parsed with the next sentence.
 
     Returns:
         df_returns (pd.DataFrame): pandas dataframe containing the sentences after parsing.
@@ -315,7 +323,7 @@ def select_actual_sentences(
 
     Args:
         df (pd.DataFrame): A dataframe containing a column 'sentences'. No 'identifier' column required.
-        spacy_pipe (spacy_pipe): Spacy pipeline object, given on a function level, because loading it once outside the function is more efficient.
+        spacy_pipe (spacy.pipeline): Spacy pipeline object, given on a function level, because loading it once outside the function is more efficient.
 
     Returns:
         df (pd.DataFrame): A dataframe which only contains sentences with at least one verb, subject and object.
