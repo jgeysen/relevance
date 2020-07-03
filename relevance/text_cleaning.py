@@ -114,9 +114,9 @@ def remove_reuters_lingo(article: str) -> str:
 def add_spacing(article: str) -> str:
     """Add spacing where necessary to the articles.
 
-    This function adds spacing to the article wherever necessary.
-    This means adding spacing where it belongs according to the rules of the English language, e.g.
+    This function adds spacing to the article wherever necessary: adding spacing where it belongs according to the rules of the English language, e.g.
     a space after a full stop: "abc:abc" -> "abc: abc", a space after a comma: "abc,abc" -> "abc, abc", etc.
+
     The implemented rules use regexes to only add spacing
     only where it is required. Reuters articles are noisy
     and require spacing where no spacing is provided. This spacing will help processing the article e.g. using
@@ -176,7 +176,9 @@ def remove_spacing(article: str) -> str:
 
     Reuters articles are noisy and contain often contain spacing in undesirable locations.
     This spacing will confuse any further processing of the article e.g. using
-    sentence splitting functions. Notice we never reduce the
+    sentence splitting functions.
+
+    Notice we never reduce the
     number of consecutive spaces (e.g. reducing 5 consecutive spaces by 1),
     this is because we will later filter on spaces to recognize tables.
 
