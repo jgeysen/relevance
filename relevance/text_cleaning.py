@@ -89,9 +89,12 @@ def remove_reuters_lingo(article: str) -> str:
         r"Reuters has not verified\s? these stories and does not vouch for their accuracy\.?",
         r"SIGN UP FOR BREAKINGVIEWS EMAIL ALERTS\.?",
         r"\(?Follow Reuters Summits on Twitter @Reuters_Summits\)?",
-        r"\(.{0,20}\sNewsroom:\s.{0,100}\)",  # Any combination of (XXXX Newsroom: XXXX)
-        r"\(\$1\s=\s.{0,30}\)",  # Any combination of ($1= XXXX)
-        r"\(\s?\(.{0,100}\@.{0,100}\n?.{0,100}?\n?.{0,100}?\)\s?\)",  # email addresses (of writers etc.) are often mentioned between double brackets (( ))
+        # Any combination of (XXXX Newsroom: XXXX)
+        r"\(.{0,20}\sNewsroom:\s.{0,100}\)",
+        # Any combination of ($1= XXXX)
+        r"\(\$1\s=\s.{0,30}\)",
+        # email addresses (of writers etc.) are often mentioned between double brackets (( ))
+        r"\(\s?\(.{0,100}\@.{0,100}\n?.{0,100}?\n?.{0,100}?\)\s?\)",
     ]
 
     for regex in remove_list:
@@ -145,7 +148,6 @@ def add_spacing(article: str) -> str:
     # except when after the parentheses there is any kind of punctuation.
     article = re.sub(r"(\w+)(\()", r"\1 \2", article)
     article = re.sub(r"(\)\.?\,?\;?\??\!?)(\w+)", r"\1 \2", article)
-
     # the same for square brackets.
     article = re.sub(r"(\w+)(\[)", r"\1 \2", article)
     article = re.sub(r"(\]\.?\,?\;?\??\!?)(\w+)", r"\1 \2", article)
@@ -161,10 +163,8 @@ def add_spacing(article: str) -> str:
     article = re.sub(r"([a-z]+\.)([A-Z]+)", r"\1 \2", article)
     # Add whitespace when '.<' occurs.
     article = re.sub(r"(\.)(\<)", r"\1 \2", article)
-
     # colon: add whitespace when 'abc:abc' occurs.
     article = re.sub(r"(\w+?\:)(\"?\w+)", r"\1 \2", article)
-
     # semicolon: add whitespace when 'abc;abc' occurs.
     article = re.sub(r"(\w+?\;)(\"?\w+)", r"\1 \2", article)
 
@@ -178,8 +178,7 @@ def remove_spacing(article: str) -> str:
     This spacing will confuse any further processing of the article e.g. using
     sentence splitting functions.
 
-    Notice we never reduce the
-    number of consecutive spaces (e.g. reducing 5 consecutive spaces by 1),
+    Notice we never reduce the number of consecutive spaces (e.g. reducing 5 consecutive spaces by 1),
     this is because we will later filter on spaces to recognize tables.
 
     Args:

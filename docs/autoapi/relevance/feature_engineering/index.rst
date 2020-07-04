@@ -45,10 +45,11 @@ Functions
    :param target: boolean which indicates if target values for training are provided in the dataframe. if True, df should contain additionally one column for each entity in 'entity_list', which are binary columns indicating a sentence is relevant (1) for set entity, or not (0).
    :type target: bool
 
-   :returns: 2-element tuple containing
+   :returns: 3-element tuple containing
 
              - **df_features** (*pd.DataFrame*): Dataframe containing the features and targets.
              - **all_regex_dict** (*dict*): Dictionary containing 'alias' and 'abbrev' keys which contain the regexes used to create the features.
+             - **feature_list** (*list*): List containing the feature names, as used in the columns of df.
 
 
 .. function:: add_features(df: pd.DataFrame, regex_list: list)
