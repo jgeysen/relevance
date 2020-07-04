@@ -181,7 +181,7 @@ def test_spacy_processing() -> None:
         list(
             zip(
                 [
-                    "This is the first sentence of the first article. This is a much longer sentence of the article. 1...... 1        1 1 2 Table. This is a long one again, with some numbers. 34      ."
+                    "This is the first sentence of the first article. This is another sentence of the article. 1...... 1        1 1 2 Table. This is a sentence again 3, with some numbers 1 1. 34      ."
                 ],
                 ["article_id1"],
             )
@@ -192,7 +192,7 @@ def test_spacy_processing() -> None:
         list(
             zip(
                 [
-                    "This is the first sentence of the first article. This is a much longer sentence of the article. This is a long one again, with some numbers."
+                    "This is the first sentence of the first article. This is another sentence of the article. This is a sentence again 3, with some numbers 1 1."
                 ],
                 ["article_id1"],
             )
